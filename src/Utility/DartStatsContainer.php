@@ -39,6 +39,8 @@ class DartStatsContainer
 
 
     private function getNumbers($content){
+        $breaks = array("\r\n","\r","\n");
+        $content = str_replace($breaks, "\n", $content);
         $splitedByLine = explode("\n",$content);
         foreach($splitedByLine as $string){
             $splitedByDate = explode(":",$string);
