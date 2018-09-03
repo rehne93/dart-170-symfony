@@ -6,19 +6,15 @@ use App\Forms\Game170Form;
 use App\model\Dart170;
 use DateTime;
 use Game;
-use Map\GameTableMap;
-use Player;
+use GameQuery;
 use PlayerQuery;
 use Propel\Runtime\Exception\PropelException;
-use Propel\Runtime\Propel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Annotation\{Route};
 use Symfony\Component\HttpFoundation\Request;
 use Psr\Log\LoggerInterface;
 
+// TODO Flash Management
 
 class Dart170FormController extends AbstractController
 {
@@ -54,10 +50,33 @@ class Dart170FormController extends AbstractController
             $this->handleData($form);
         }
 
-        $response = $this->render('dart170_form/index.html.twig', array('name' => $this->playerName, 'form' => $form->createView()));
+
+        $response = $this->render('dart170_form/index.html.twig', array('name' => $this->playerName,
+            'form' => $form->createView(),
+            'average' => $this->calculateAverage()));
         return $response;
     }
 
+
+    private function calculateAverage()
+    {
+        $playerQuery = new PlayerQuery();
+        $player = $playerQuery->findByName($this->playerName)->getFirst();
+        $gameQuery = new GameQuery();
+        $games = $gameQuery->findByPlayerid($player->getId());
+        if ($games->isEmpty()) {
+            $this->logger->debug("No games found");
+            return 0.0;
+        }
+        $rounds = 0;
+        $sum = 0;
+        foreach($games as  $g){
+            $rounds++;
+            $sum+= $g->getRounds();
+        }
+        return round($sum/$rounds,3);
+
+    }
 
     private function handleData($form)
     {
