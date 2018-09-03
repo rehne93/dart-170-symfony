@@ -36,10 +36,13 @@ class NewPlayerController extends AbstractController
         $form = $this->createForm(NewUserForm::class, $player);
         $form->handleRequest($request);
         $response = $this->render('new_player/index.html.twig', array('form' => $form->createView()));
-
+        $redirect = false;
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->handleForm($form, $response);
+            $redirect = $this->handleForm($form, $response);
         }
+        if ($redirect)
+            return $this->redirectToRoute('dart170_form');
+
         return $response;
     }
 
@@ -48,11 +51,12 @@ class NewPlayerController extends AbstractController
      * @param $response
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    private function handleForm($form, $response)
+    private
+    function handleForm($form, $response)
     {
         $player = $form->getData();
         if ($player->getName() === '' || $player->getPassword() == '' || $player->getName() === null) {
-            return $this->render('new_player/index.html.twig', array('form' => $form->createView()));
+            return false;
         }
         $dbPlayer = new Player();
         $dbPlayer->setName($player->getName());
@@ -65,12 +69,15 @@ class NewPlayerController extends AbstractController
                 $this->logger->debug("Player saved succesfully.");
                 $this->addFlash('success', "Player saved");
                 $response->headers->setCookie(new Cookie("player", $dbPlayer->getName()));
+
             } catch (PropelException $e) {
             }
         } else {
             $response->headers->setCookie(new Cookie('player', $dbPlayer->getName()));
             $this->addFlash('error', "Player already exists. Logged in.");
+            return true;
         }
+        return false;
     }
 
 
