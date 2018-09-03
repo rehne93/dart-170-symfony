@@ -1,8 +1,37 @@
-Hello {{ name }}! You're successfully logged in! <br> <br>
+<html>
 
-{{ form_start(form) }}
-{{ form_widget(form) }}
-{{ form_end(form) }}
+
+<head>
+    {% block stylesheets %}
+        <link href="../css/base.css" rel="stylesheet"/>
+        <link href="../css/dart170forms.css" rel="stylesheet"/>
+    {% endblock %}
+</head>
+<body>
+
+<div class="baseStyle user_info">
+    Hello {{ name }}! <br> You're successfully logged in! <br> <br>
+</div>
+
+<div class="form">
+    {{ form_start(form) }}
+    <div class="baseStyle numRounds">
+        {{ form_row(form.numRounds) }}
+    </div>
+    <br>
+    <div class="baseStyle submit">
+        {{ form_row(form.save) }}
+    </div>
+    {{ form_end(form) }}
+</div>
 
 <br>
-Momentaner Durchschnitt für 170 (All-Time): {{ average }}
+<div class="baseStyle average_label">
+    Momentaner Durchschnitt für 170 (All-Time): <br>
+</div>
+<div class="baseStyle average">
+    {{ average }}
+</div>
+
+</body>
+</html>

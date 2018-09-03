@@ -19,8 +19,8 @@ class Game170Form extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('numRounds', NumberType::class)
-            ->add('date', DateType::class)
-            ->add('save', SubmitType::class, array('label' => 'Speichern'));
+        $builder->add('numRounds', NumberType::class, array('label' => "Rounds needed: "))
+            //->add('date', DateType::class)
+            ->add('save', SubmitType::class, array('label' => 'Save'));
     }
 }

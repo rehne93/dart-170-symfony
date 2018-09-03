@@ -1,0 +1,14 @@
+.baseStyle{
+    margin: auto;
+    width: 50%;
+    text-align: center;
+}
+.baseStyle button{
+    border-radius: 8px;
+    display: inline-block;
+    font-size: 20px;
+}
+
+label{
+    display: block;
+}

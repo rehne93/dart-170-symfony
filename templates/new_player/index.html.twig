@@ -1,17 +1,35 @@
-Use your credentials to login if you have a account. <br>
-Otherwise a account will be created for you. <br> <br>
-{{ form_start(form) }}
-{{ form_widget(form) }}
-{{ form_end(form) }}
-<a href="{{ path('dart170_form') }}"> Zum Spiel </a>
+<html>
+<head>
+    {% block stylesheets %}
+        <link href="../../css/base.css" rel="stylesheet"/>
+        <link href="../../css/newplayerform.css" rel="stylesheet"/>
+    {% endblock %}
+</head>
+<div class="baseStyle accountInfo">Use your credentials to login if you have a account. <br>
+    Otherwise a account will be created for you. <br> <br></div>
+<div class="form">
+    {{ form_start(form) }}
+    <span class="baseStyle namePassword">
+        {{ form_row(form.name) }}
+        {{ form_row(form.password) }} <br>
+   </span>
+    <div class="baseStyle submit">
+        {{ form_row(form.submit) }}</div>
+    {{ form_end(form) }}
+</div>
+<div class="baseStyle toGame">
+    <a href="{{ path('dart170_form') }}"> Zum Spiel </a>
 
+</div>
 {% for message in app.flashes('success') %}
     <div class="flash-notice">
         {{ message }}
     </div>
 {% endfor %}
 {% for message in app.flashes('error') %}
-<div class="flash-notice">
-    {{ message }}
-</div>
-{% endfor %}
+    <div class="flash-notice">
+        {{ message }}
+    </div>
+{% endfor %}</html>
+
+

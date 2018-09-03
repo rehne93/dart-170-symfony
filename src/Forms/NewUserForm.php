@@ -19,8 +19,8 @@ class NewUserForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('name', TextType::class)
-            ->add('password', PasswordType::class)
+        $builder->add('name', TextType::class, array('label'=>"Name: "))
+            ->add('password', PasswordType::class, array('label'=>"Password: "))
             ->add('submit', SubmitType::class);
     }
 
