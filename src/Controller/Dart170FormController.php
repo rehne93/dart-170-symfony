@@ -7,6 +7,8 @@ use App\model\Dart170;
 use DateTime;
 use Game;
 use Map\GameTableMap;
+use Player;
+use PlayerQuery;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Propel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,38 +29,60 @@ class Dart170FormController extends AbstractController
     }
 
     private $logger;
+    private $playerName;
 
     /**
      * @Route("/dart/170", name="dart170_form")
      */
     public function new(Request $request)
     {
+        $cookie = $request->cookies;
+        if ($cookie->has('player')) {
+            $this->logger->debug("Found Player");
+            $this->playerName = $cookie->get('player');
+        } else {
+            return $this->redirectToRoute('new_player');
+        }
         $dartStats = new Dart170();
         $dartStats->setDate(new DateTime('today'));
-
         $dartStats->setNumRounds(0);
 
         $form = $this->createForm(Game170Form::class, $dartStats);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $dartStats = $form->getData();
-            if ($dartStats->getNumRounds() == 0) {
-                return $this->render('dart170_form/index.html.twig', array('form' => $form->createView()));
-            }
-            $this->logger->info("Form Rounds: " . $dartStats->getNumRounds());
-            $game = new Game();
-            $game->setGametype("170");
-            $game->setRounds($dartStats->getNumRounds());
-            $game->setDate($dartStats->getDate());
-            try {
-                $game->save();
-                $this->addFlash('success', "Saved game");
-            } catch (PropelException $e) {
-            }
-
+            $this->handleData($form);
         }
 
-        return $this->render('dart170_form/index.html.twig', array('form' => $form->createView()));
+        $response = $this->render('dart170_form/index.html.twig', array('name' => $this->playerName, 'form' => $form->createView()));
+        return $response;
+    }
+
+
+    private function handleData($form)
+    {
+        $dartStats = $form->getData();
+        if ($dartStats->getNumRounds() == 0) {
+            return $this->render('dart170_form/index.html.twig', array('form' => $form->createView()));
+        }
+        $this->logger->info("Form Rounds: " . $dartStats->getNumRounds());
+        $playerQuery = new PlayerQuery();
+        $player = $playerQuery->findByName($this->playerName)->getFirst();
+        if ($player === null) {
+            $this->logger->debug("Player: " . $this->playerName . " not found.");
+            return $this->redirectToRoute('new_player');
+        } else {
+            $this->logger->debug("Player found.");
+        }
+        $game = new Game();
+        $game->setGametype("170");
+        $game->setRounds($dartStats->getNumRounds());
+        $game->setDate($dartStats->getDate());
+        $game->setPlayer($player);
+        try {
+            $game->save();
+            $this->addFlash('success', "Saved game");
+        } catch (PropelException $e) {
+        }
     }
 }

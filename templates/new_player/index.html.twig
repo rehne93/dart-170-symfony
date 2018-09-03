@@ -1,0 +1,17 @@
+Use your credentials to login if you have a account. <br>
+Otherwise a account will be created for you. <br> <br>
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
+<a href="{{ path('dart170_form') }}"> Zum Spiel </a>
+
+{% for message in app.flashes('success') %}
+    <div class="flash-notice">
+        {{ message }}
+    </div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+<div class="flash-notice">
+    {{ message }}
+</div>
+{% endfor %}
