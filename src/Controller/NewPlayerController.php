@@ -37,11 +37,18 @@ class NewPlayerController extends AbstractController
         $form->handleRequest($request);
         $response = $this->render('new_player/index.html.twig', array('form' => $form->createView()));
         $redirect = false;
+
         if ($form->isSubmitted() && $form->isValid()) {
             $redirect = $this->handleForm($form, $response);
         }
-        if ($redirect)
+        if ($redirect) {
+            foreach ($response->headers->getCookies() as $cookie) {
+                $this->logger->debug("Cookie: " . $cookie->getName() . ":" . $cookie->getValue());
+            }
+            $response->send();
             return $this->redirectToRoute('dart170_form');
+
+        }
 
         return $response;
     }
@@ -63,11 +70,13 @@ class NewPlayerController extends AbstractController
         $dbPlayer->setPassword($player->getPassword());
 
         $playerQuery = new PlayerQuery();
+
         if ($playerQuery->findByName($dbPlayer->getName())->isEmpty()) {
             try {
                 $dbPlayer->save();
                 $this->logger->debug("Player saved succesfully.");
                 $this->addFlash('success', "Player saved");
+
                 $response->headers->setCookie(new Cookie("player", $dbPlayer->getName()));
 
             } catch (PropelException $e) {
