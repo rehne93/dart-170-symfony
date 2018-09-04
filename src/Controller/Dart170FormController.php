@@ -63,18 +63,14 @@ class Dart170FormController extends AbstractController
         $playerQuery = new PlayerQuery();
         $player = $playerQuery->findByName($this->playerName)->getFirst();
         $gameQuery = new GameQuery();
-        $games = $gameQuery->findByPlayerid($player->getId());
-        if ($games->isEmpty()) {
-            $this->logger->debug("No games found");
-            return 0.0;
-        }
-        $rounds = 0;
+        $gameValues = $gameQuery->findByPlayerid($player->getId())->getColumnValues('rounds');
         $sum = 0;
-        foreach($games as  $g){
-            $rounds++;
-            $sum+= $g->getRounds();
+        foreach ($gameValues as $val) {
+            $sum += $val;
         }
-        return round($sum/$rounds,3);
+        $this->logger->debug("Sum 2: " .$sum.", Rounds 2: ".sizeof($gameValues));
+
+        return sizeof($gameValues ) === 0 ? 0.0 : round($sum / sizeof($gameValues), 3);
 
     }
 
