@@ -46,7 +46,8 @@ class NewPlayerController extends AbstractController
                 $this->logger->debug("Cookie: " . $cookie->getName() . ":" . $cookie->getValue());
             }
             $response->send();
-            return $this->redirectToRoute('dart170_form');
+            $this->addFlash('success',"Player logged in!");
+          //  return $this->redirectToRoute('dart170_form');
 
         }
 

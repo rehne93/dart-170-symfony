@@ -18,11 +18,11 @@ use Psr\Log\LoggerInterface;
 
 class Dart170FormController extends AbstractController
 {
-
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
+
 
     private $logger;
     private $playerName;
@@ -58,6 +58,7 @@ class Dart170FormController extends AbstractController
     }
 
 
+    // TODO Improve this by not always grabbing  data
     private function calculateAverage()
     {
         $playerQuery = new PlayerQuery();
