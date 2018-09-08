@@ -9,7 +9,7 @@
 namespace App\model;
 
 
-class AroundTheClock
+class AroundTheClockFormClass
 {
 
     private $numDarts;

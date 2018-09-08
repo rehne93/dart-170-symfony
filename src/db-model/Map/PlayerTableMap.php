@@ -153,6 +153,13 @@ class PlayerTableMap extends TableMap
     1 => ':id',
   ),
 ), null, null, 'Games', false);
+        $this->addRelation('AroundTheClock', '\\AroundTheClock', RelationMap::ONE_TO_MANY, array (
+  0 =>
+  array (
+    0 => ':playerId',
+    1 => ':id',
+  ),
+), null, null, 'AroundTheClocks', false);
     } // buildRelations()
 
     /**

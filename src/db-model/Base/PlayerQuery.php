@@ -46,7 +46,17 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildPlayerQuery rightJoinWithGame() Adds a RIGHT JOIN clause and with to the query using the Game relation
  * @method     ChildPlayerQuery innerJoinWithGame() Adds a INNER JOIN clause and with to the query using the Game relation
  *
- * @method     \GameQuery endUse() Finalizes a secondary criteria and merges it with its primary Criteria
+ * @method     ChildPlayerQuery leftJoinAroundTheClock($relationAlias = null) Adds a LEFT JOIN clause to the query using the AroundTheClock relation
+ * @method     ChildPlayerQuery rightJoinAroundTheClock($relationAlias = null) Adds a RIGHT JOIN clause to the query using the AroundTheClock relation
+ * @method     ChildPlayerQuery innerJoinAroundTheClock($relationAlias = null) Adds a INNER JOIN clause to the query using the AroundTheClock relation
+ *
+ * @method     ChildPlayerQuery joinWithAroundTheClock($joinType = Criteria::INNER_JOIN) Adds a join clause and with to the query using the AroundTheClock relation
+ *
+ * @method     ChildPlayerQuery leftJoinWithAroundTheClock() Adds a LEFT JOIN clause and with to the query using the AroundTheClock relation
+ * @method     ChildPlayerQuery rightJoinWithAroundTheClock() Adds a RIGHT JOIN clause and with to the query using the AroundTheClock relation
+ * @method     ChildPlayerQuery innerJoinWithAroundTheClock() Adds a INNER JOIN clause and with to the query using the AroundTheClock relation
+ *
+ * @method     \GameQuery|\AroundTheClockQuery endUse() Finalizes a secondary criteria and merges it with its primary Criteria
  *
  * @method     ChildPlayer findOne(ConnectionInterface $con = null) Return the first ChildPlayer matching the query
  * @method     ChildPlayer findOneOrCreate(ConnectionInterface $con = null) Return the first ChildPlayer matching the query, or a new ChildPlayer object populated from the query conditions when no match is found
@@ -416,6 +426,79 @@ abstract class PlayerQuery extends ModelCriteria
         return $this
             ->joinGame($relationAlias, $joinType)
             ->useQuery($relationAlias ? $relationAlias : 'Game', '\GameQuery');
+    }
+
+    /**
+     * Filter the query by a related \AroundTheClock object
+     *
+     * @param \AroundTheClock|ObjectCollection $aroundTheClock the related object to use as filter
+     * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return ChildPlayerQuery The current query, for fluid interface
+     */
+    public function filterByAroundTheClock($aroundTheClock, $comparison = null)
+    {
+        if ($aroundTheClock instanceof \AroundTheClock) {
+            return $this
+                ->addUsingAlias(PlayerTableMap::COL_ID, $aroundTheClock->getPlayerid(), $comparison);
+        } elseif ($aroundTheClock instanceof ObjectCollection) {
+            return $this
+                ->useAroundTheClockQuery()
+                ->filterByPrimaryKeys($aroundTheClock->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByAroundTheClock() only accepts arguments of type \AroundTheClock or Collection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the AroundTheClock relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return $this|ChildPlayerQuery The current query, for fluid interface
+     */
+    public function joinAroundTheClock($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('AroundTheClock');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'AroundTheClock');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the AroundTheClock relation AroundTheClock object
+     *
+     * @see useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return \AroundTheClockQuery A secondary query class using the current class as primary query
+     */
+    public function useAroundTheClockQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        return $this
+            ->joinAroundTheClock($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'AroundTheClock', '\AroundTheClockQuery');
     }
 
     /**

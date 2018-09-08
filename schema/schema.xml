@@ -41,6 +41,16 @@
         </foreign-key>
     </table>
 
+    <table name="aroundTheClock" phpName="AroundTheClock">
+        <column name="id" type="integer" required="true" autoIncrement="true" primaryKey="true"/>
+        <column name="bullIncluded" type="boolean" required="true"/>
+        <column name="dartsNeeded" type="integer" required="true"/>
+        <column name="playerId" type="integer" required="true"/>
+        <foreign-key foreignTable="player">
+            <reference local="playerId" foreign="id"/>
+        </foreign-key>
+
+    </table>
 
     <!--
         When you're done with editing, open a terminal and run

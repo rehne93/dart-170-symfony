@@ -2,12 +2,15 @@
 
 namespace Base;
 
+use \AroundTheClock as ChildAroundTheClock;
+use \AroundTheClockQuery as ChildAroundTheClockQuery;
 use \Game as ChildGame;
 use \GameQuery as ChildGameQuery;
 use \Player as ChildPlayer;
 use \PlayerQuery as ChildPlayerQuery;
 use \Exception;
 use \PDO;
+use Map\AroundTheClockTableMap;
 use Map\GameTableMap;
 use Map\PlayerTableMap;
 use Propel\Runtime\Propel;
@@ -92,6 +95,12 @@ abstract class Player implements ActiveRecordInterface
     protected $collGamesPartial;
 
     /**
+     * @var        ObjectCollection|ChildAroundTheClock[] Collection to store aggregation of ChildAroundTheClock objects.
+     */
+    protected $collAroundTheClocks;
+    protected $collAroundTheClocksPartial;
+
+    /**
      * Flag to prevent endless save loop, if this object is referenced
      * by another object which falls in this transaction.
      *
@@ -104,6 +113,12 @@ abstract class Player implements ActiveRecordInterface
      * @var ObjectCollection|ChildGame[]
      */
     protected $gamesScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var ObjectCollection|ChildAroundTheClock[]
+     */
+    protected $aroundTheClocksScheduledForDeletion = null;
 
     /**
      * Initializes internal state of Base\Player object.
@@ -535,6 +550,8 @@ abstract class Player implements ActiveRecordInterface
 
             $this->collGames = null;
 
+            $this->collAroundTheClocks = null;
+
         } // if (deep)
     }
 
@@ -660,6 +677,23 @@ abstract class Player implements ActiveRecordInterface
 
             if ($this->collGames !== null) {
                 foreach ($this->collGames as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->aroundTheClocksScheduledForDeletion !== null) {
+                if (!$this->aroundTheClocksScheduledForDeletion->isEmpty()) {
+                    \AroundTheClockQuery::create()
+                        ->filterByPrimaryKeys($this->aroundTheClocksScheduledForDeletion->getPrimaryKeys(false))
+                        ->delete($con);
+                    $this->aroundTheClocksScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collAroundTheClocks !== null) {
+                foreach ($this->collAroundTheClocks as $referrerFK) {
                     if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
                         $affectedRows += $referrerFK->save($con);
                     }
@@ -846,6 +880,21 @@ abstract class Player implements ActiveRecordInterface
                 }
 
                 $result[$key] = $this->collGames->toArray(null, false, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collAroundTheClocks) {
+
+                switch ($keyType) {
+                    case TableMap::TYPE_CAMELNAME:
+                        $key = 'aroundTheClocks';
+                        break;
+                    case TableMap::TYPE_FIELDNAME:
+                        $key = 'aroundTheClocks';
+                        break;
+                    default:
+                        $key = 'AroundTheClocks';
+                }
+
+                $result[$key] = $this->collAroundTheClocks->toArray(null, false, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
             }
         }
 
@@ -1075,6 +1124,12 @@ abstract class Player implements ActiveRecordInterface
                 }
             }
 
+            foreach ($this->getAroundTheClocks() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addAroundTheClock($relObj->copy($deepCopy));
+                }
+            }
+
         } // if ($deepCopy)
 
         if ($makeNew) {
@@ -1118,6 +1173,10 @@ abstract class Player implements ActiveRecordInterface
     {
         if ('Game' == $relationName) {
             $this->initGames();
+            return;
+        }
+        if ('AroundTheClock' == $relationName) {
+            $this->initAroundTheClocks();
             return;
         }
     }
@@ -1348,6 +1407,231 @@ abstract class Player implements ActiveRecordInterface
     }
 
     /**
+     * Clears out the collAroundTheClocks collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return void
+     * @see        addAroundTheClocks()
+     */
+    public function clearAroundTheClocks()
+    {
+        $this->collAroundTheClocks = null; // important to set this to NULL since that means it is uninitialized
+    }
+
+    /**
+     * Reset is the collAroundTheClocks collection loaded partially.
+     */
+    public function resetPartialAroundTheClocks($v = true)
+    {
+        $this->collAroundTheClocksPartial = $v;
+    }
+
+    /**
+     * Initializes the collAroundTheClocks collection.
+     *
+     * By default this just sets the collAroundTheClocks collection to an empty array (like clearcollAroundTheClocks());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param      boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initAroundTheClocks($overrideExisting = true)
+    {
+        if (null !== $this->collAroundTheClocks && !$overrideExisting) {
+            return;
+        }
+
+        $collectionClassName = AroundTheClockTableMap::getTableMap()->getCollectionClassName();
+
+        $this->collAroundTheClocks = new $collectionClassName;
+        $this->collAroundTheClocks->setModel('\AroundTheClock');
+    }
+
+    /**
+     * Gets an array of ChildAroundTheClock objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this ChildPlayer is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param      Criteria $criteria optional Criteria object to narrow the query
+     * @param      ConnectionInterface $con optional connection object
+     * @return ObjectCollection|ChildAroundTheClock[] List of ChildAroundTheClock objects
+     * @throws PropelException
+     */
+    public function getAroundTheClocks(Criteria $criteria = null, ConnectionInterface $con = null)
+    {
+        $partial = $this->collAroundTheClocksPartial && !$this->isNew();
+        if (null === $this->collAroundTheClocks || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collAroundTheClocks) {
+                // return empty collection
+                $this->initAroundTheClocks();
+            } else {
+                $collAroundTheClocks = ChildAroundTheClockQuery::create(null, $criteria)
+                    ->filterByPlayer($this)
+                    ->find($con);
+
+                if (null !== $criteria) {
+                    if (false !== $this->collAroundTheClocksPartial && count($collAroundTheClocks)) {
+                        $this->initAroundTheClocks(false);
+
+                        foreach ($collAroundTheClocks as $obj) {
+                            if (false == $this->collAroundTheClocks->contains($obj)) {
+                                $this->collAroundTheClocks->append($obj);
+                            }
+                        }
+
+                        $this->collAroundTheClocksPartial = true;
+                    }
+
+                    return $collAroundTheClocks;
+                }
+
+                if ($partial && $this->collAroundTheClocks) {
+                    foreach ($this->collAroundTheClocks as $obj) {
+                        if ($obj->isNew()) {
+                            $collAroundTheClocks[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collAroundTheClocks = $collAroundTheClocks;
+                $this->collAroundTheClocksPartial = false;
+            }
+        }
+
+        return $this->collAroundTheClocks;
+    }
+
+    /**
+     * Sets a collection of ChildAroundTheClock objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param      Collection $aroundTheClocks A Propel collection.
+     * @param      ConnectionInterface $con Optional connection object
+     * @return $this|ChildPlayer The current object (for fluent API support)
+     */
+    public function setAroundTheClocks(Collection $aroundTheClocks, ConnectionInterface $con = null)
+    {
+        /** @var ChildAroundTheClock[] $aroundTheClocksToDelete */
+        $aroundTheClocksToDelete = $this->getAroundTheClocks(new Criteria(), $con)->diff($aroundTheClocks);
+
+
+        $this->aroundTheClocksScheduledForDeletion = $aroundTheClocksToDelete;
+
+        foreach ($aroundTheClocksToDelete as $aroundTheClockRemoved) {
+            $aroundTheClockRemoved->setPlayer(null);
+        }
+
+        $this->collAroundTheClocks = null;
+        foreach ($aroundTheClocks as $aroundTheClock) {
+            $this->addAroundTheClock($aroundTheClock);
+        }
+
+        $this->collAroundTheClocks = $aroundTheClocks;
+        $this->collAroundTheClocksPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related AroundTheClock objects.
+     *
+     * @param      Criteria $criteria
+     * @param      boolean $distinct
+     * @param      ConnectionInterface $con
+     * @return int             Count of related AroundTheClock objects.
+     * @throws PropelException
+     */
+    public function countAroundTheClocks(Criteria $criteria = null, $distinct = false, ConnectionInterface $con = null)
+    {
+        $partial = $this->collAroundTheClocksPartial && !$this->isNew();
+        if (null === $this->collAroundTheClocks || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collAroundTheClocks) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getAroundTheClocks());
+            }
+
+            $query = ChildAroundTheClockQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByPlayer($this)
+                ->count($con);
+        }
+
+        return count($this->collAroundTheClocks);
+    }
+
+    /**
+     * Method called to associate a ChildAroundTheClock object to this object
+     * through the ChildAroundTheClock foreign key attribute.
+     *
+     * @param  ChildAroundTheClock $l ChildAroundTheClock
+     * @return $this|\Player The current object (for fluent API support)
+     */
+    public function addAroundTheClock(ChildAroundTheClock $l)
+    {
+        if ($this->collAroundTheClocks === null) {
+            $this->initAroundTheClocks();
+            $this->collAroundTheClocksPartial = true;
+        }
+
+        if (!$this->collAroundTheClocks->contains($l)) {
+            $this->doAddAroundTheClock($l);
+
+            if ($this->aroundTheClocksScheduledForDeletion and $this->aroundTheClocksScheduledForDeletion->contains($l)) {
+                $this->aroundTheClocksScheduledForDeletion->remove($this->aroundTheClocksScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ChildAroundTheClock $aroundTheClock The ChildAroundTheClock object to add.
+     */
+    protected function doAddAroundTheClock(ChildAroundTheClock $aroundTheClock)
+    {
+        $this->collAroundTheClocks[]= $aroundTheClock;
+        $aroundTheClock->setPlayer($this);
+    }
+
+    /**
+     * @param  ChildAroundTheClock $aroundTheClock The ChildAroundTheClock object to remove.
+     * @return $this|ChildPlayer The current object (for fluent API support)
+     */
+    public function removeAroundTheClock(ChildAroundTheClock $aroundTheClock)
+    {
+        if ($this->getAroundTheClocks()->contains($aroundTheClock)) {
+            $pos = $this->collAroundTheClocks->search($aroundTheClock);
+            $this->collAroundTheClocks->remove($pos);
+            if (null === $this->aroundTheClocksScheduledForDeletion) {
+                $this->aroundTheClocksScheduledForDeletion = clone $this->collAroundTheClocks;
+                $this->aroundTheClocksScheduledForDeletion->clear();
+            }
+            $this->aroundTheClocksScheduledForDeletion[]= clone $aroundTheClock;
+            $aroundTheClock->setPlayer(null);
+        }
+
+        return $this;
+    }
+
+    /**
      * Clears the current object, sets all attributes to their default values and removes
      * outgoing references as well as back-references (from other objects to this one. Results probably in a database
      * change of those foreign objects when you call `save` there).
@@ -1380,9 +1664,15 @@ abstract class Player implements ActiveRecordInterface
                     $o->clearAllReferences($deep);
                 }
             }
+            if ($this->collAroundTheClocks) {
+                foreach ($this->collAroundTheClocks as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
         } // if ($deep)
 
         $this->collGames = null;
+        $this->collAroundTheClocks = null;
     }
 
     /**
