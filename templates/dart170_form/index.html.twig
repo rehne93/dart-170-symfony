@@ -8,15 +8,14 @@
     {% endblock %}
 </head>
 <body>
-
 <div class="baseStyle user_info">
     Hello {{ name }}! <br> You're successfully logged in! <br> <br>
 </div>
 
 <div class="form">
-    {{ form_start(form) }}
+    {{ form_start(form,{'attr':{'id':'form_170'}}) }}
     <div class="baseStyle numRounds">
-        {{ form_row(form.numRounds) }}
+        {{ form_row(form.numRounds, {'attr':{'autofocus':'true'}}) }}
     </div>
     <br>
     <div class="baseStyle submit">

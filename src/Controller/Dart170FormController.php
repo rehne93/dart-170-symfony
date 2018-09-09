@@ -25,7 +25,7 @@ class Dart170FormController extends AbstractController
 
 
     private $logger;
-    private $playerName;
+    private $playerName="";
 
     /**
      * @Route("/dart/170", name="dart170_form")
@@ -41,7 +41,7 @@ class Dart170FormController extends AbstractController
         }
         $dartStats = new Dart170();
         $dartStats->setDate(new DateTime('today'));
-        $dartStats->setNumRounds(0);
+        $dartStats->setNumRounds("0");
 
         $form = $this->createForm(Game170Form::class, $dartStats);
         $form->handleRequest($request);
@@ -52,7 +52,7 @@ class Dart170FormController extends AbstractController
 
 
         $response = $this->render('dart170_form/index.html.twig', array('name' => $this->playerName,
-            'form' => $form->createView(),
+            'form' => $this->createForm(Game170Form::class,$dartStats)->createView(),
             'average' => $this->calculateAverage()));
         return $response;
     }
