@@ -4,15 +4,18 @@ namespace App\Controller;
 
 use App\Forms\Game170Form;
 use App\model\Dart170;
+use Critera;
 use DateTime;
 use Game;
 use GameQuery;
 use PlayerQuery;
+use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Exception\PropelException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\{Route};
 use Symfony\Component\HttpFoundation\Request;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Validator\Constraints\Date;
 
 // TODO Flash Management
 
@@ -25,7 +28,7 @@ class Dart170FormController extends AbstractController
 
 
     private $logger;
-    private $playerName="";
+    private $playerName = "";
 
     /**
      * @Route("/dart/170", name="dart170_form")
@@ -40,7 +43,9 @@ class Dart170FormController extends AbstractController
             return $this->redirectToRoute('new_player');
         }
         $dartStats = new Dart170();
-        $dartStats->setDate(new DateTime('today'));
+        $dateTime = new DateTime();
+        $dateTime->format('Y-m-d H:i:s');
+        $dartStats->setDate($dateTime);
         $dartStats->setNumRounds("0");
 
         $form = $this->createForm(Game170Form::class, $dartStats);
@@ -52,8 +57,9 @@ class Dart170FormController extends AbstractController
 
 
         $response = $this->render('dart170_form/index.html.twig', array('name' => $this->playerName,
-            'form' => $this->createForm(Game170Form::class,$dartStats)->createView(),
-            'average' => $this->calculateAverage()));
+            'form' => $this->createForm(Game170Form::class, $dartStats)->createView(),
+            'average' => $this->calculateAverage(),
+            'shotList' => $this->getLastShots()));
         return $response;
     }
 
@@ -61,18 +67,44 @@ class Dart170FormController extends AbstractController
     // TODO Improve this by not always grabbing  data
     private function calculateAverage()
     {
-        $playerQuery = new PlayerQuery();
-        $player = $playerQuery->findByName($this->playerName)->getFirst();
+        $player = $this->getPlayer();
         $gameQuery = new GameQuery();
         $gameValues = $gameQuery->findByPlayerid($player->getId())->getColumnValues('rounds');
         $sum = 0;
         foreach ($gameValues as $val) {
             $sum += $val;
         }
-        $this->logger->debug("Sum 2: " .$sum.", Rounds 2: ".sizeof($gameValues));
+        $this->logger->debug("Sum 2: " . $sum . ", Rounds 2: " . sizeof($gameValues));
 
-        return sizeof($gameValues ) === 0 ? 0.0 : round($sum / sizeof($gameValues), 3);
+        return sizeof($gameValues) === 0 ? 0.0 : round($sum / sizeof($gameValues), 3);
 
+    }
+
+    private function getLastShots()
+    {
+        $player = $this->getPlayer();
+        $list = "";
+        try {
+            $gameValues = GameQuery::create()->filterByPlayer($player)
+                ->select(array('rounds'))
+                ->orderByDate(Criteria::DESC)
+                ->limit(10)
+                ->find();
+            foreach ($gameValues as $game) {
+                $list .= $game . " ";
+            }
+        } catch (PropelException $e) {
+        }
+
+        return $list;
+    }
+
+
+    private function getPlayer()
+    {
+        $playerQuery = new PlayerQuery();
+        $player = $playerQuery->findByName($this->playerName)->getFirst();
+        return $player;
     }
 
     private function handleData($form)

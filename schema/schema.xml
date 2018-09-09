@@ -34,7 +34,7 @@
         <column name="id" type="integer" required="true" autoIncrement="true" primaryKey="true"/>
         <column name="gameType" type="varchar" required="true"/>
         <column name="rounds" type="integer" required="true"/>
-        <column name="date" type="date" required="true"/>
+        <column name="date" type="TIMESTAMP" required="true"/>
         <column name="playerId" type="integer" required="true"/>
         <foreign-key foreignTable="player">
             <reference local="playerId" foreign="id"/>
