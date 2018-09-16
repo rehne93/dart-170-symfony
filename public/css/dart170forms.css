@@ -8,7 +8,13 @@
     font-size: 15px;
 }
 
-
+.baseStyle.average_week_label{
+    font-size: 21px;
+}
+.baseStyle.average_week{
+    font-size: 21px;
+    color: chocolate;
+}
 
 .baseStyle.average_label{
     font-size: 15px;
@@ -16,5 +22,6 @@
 
 .baseStyle.average{
     font-size: 20px;
+    color: coral;
 }
 

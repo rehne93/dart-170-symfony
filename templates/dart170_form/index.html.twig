@@ -1,6 +1,4 @@
 <html>
-
-
 <head>
     {% block stylesheets %}
         <link href="../css/base.css" rel="stylesheet"/>
@@ -23,20 +21,26 @@
     </div>
     {{ form_end(form) }}
 </div>
-
-<br>
-<div class="baseStyle average_label">
-    Momentaner Durchschnitt für 170 (All-Time): <br>
-</div>
-<div class="baseStyle average">
-    {{ average }}
-</div>
 <br>
 <div class="baseStyle lastShots">
     Letzten Würfe: <br>
 </div>
 <div class="baseStyle shotList">
     {{ shotList }}
+</div>
+<br>
+<div class="baseStyle average_week_label">
+    Durchschnitt der letzten 7 Tage bei {{ games_week }} gespielten Runden: <br>
+</div>
+<div class="baseStyle average_week">
+    {{ average_week }}
+</div>
+<br>
+<div class="baseStyle average_label">
+    Momentaner Durchschnitt für 170 (All-Time) bei {{ games_total }} gespielten Runden: <br>
+</div>
+<div class="baseStyle average">
+    {{ average }}
 </div>
 
 </body>

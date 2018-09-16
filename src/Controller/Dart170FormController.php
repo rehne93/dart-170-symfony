@@ -58,14 +58,34 @@ class Dart170FormController extends AbstractController
 
         $response = $this->render('dart170_form/index.html.twig', array('name' => $this->playerName,
             'form' => $this->createForm(Game170Form::class, $dartStats)->createView(),
-            'average' => $this->calculateAverage(),
-            'shotList' => $this->getLastShots()));
+            'average' => $this->getAllTimeAverage(),
+            'shotList' => $this->getLastShots(),
+            'average_week' => $this->getAverageLastWeek(),
+            'games_total' => $this->getAllTimeGames(),
+            'games_week' => $this->getLastWeekGames()));
         return $response;
     }
 
 
+    private function secondsLast7Days()
+    {
+        return 7 * 24 * 60 * 60;
+    }
+
+    private function getLastWeekGames()
+    {
+        return sizeof(GameQuery::create()
+            ->filterByDate(array('min' => time() - $this->secondsLast7Days()))
+            ->findByPlayerid($this->getPlayer()->getId()));
+    }
+
+    private function getAllTimeGames()
+    {
+        return sizeof(GameQuery::create()->findByPlayerid($this->getPlayer()->getId()));
+    }
+
     // TODO Improve this by not always grabbing  data
-    private function calculateAverage()
+    private function getAllTimeAverage()
     {
         $player = $this->getPlayer();
         $gameQuery = new GameQuery();
@@ -77,6 +97,25 @@ class Dart170FormController extends AbstractController
         $this->logger->debug("Sum 2: " . $sum . ", Rounds 2: " . sizeof($gameValues));
 
         return sizeof($gameValues) === 0 ? 0.0 : round($sum / sizeof($gameValues), 3);
+
+    }
+
+
+    private function getAverageLastWeek()
+    {
+        $player = $this->getPlayer();
+        $games = GameQuery::create()
+            ->filterByDate(array('min' => time() - $this->secondsLast7Days()))
+            ->findByPlayerid($player->getId())
+            ->getColumnValues('rounds');
+        $sum = 0;
+        foreach ($games as $g) {
+            $sum += $g;
+        }
+
+
+        return sizeof($games) === 0 ? 0.0 : round($sum / sizeof($games), 3);
+
 
     }
 
