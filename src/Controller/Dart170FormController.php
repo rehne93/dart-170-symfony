@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Forms\Game170Form;
 use App\model\Dart170;
+use App\Utility\Authorizer;
 use Critera;
 use DateTime;
 use Game;
@@ -35,13 +36,18 @@ class Dart170FormController extends AbstractController
      */
     public function new(Request $request)
     {
-        $cookie = $request->cookies;
+        $auth = new Authorizer();
+        $this->playerName = $auth->isAuthorized($request);
+        if ($this->playerName === '') {
+            return $this->redirectToRoute('new_player');
+        }
+       /* $cookie = $request->cookies;
         if ($cookie->has('player')) {
             $this->logger->debug("Found Player");
             $this->playerName = $cookie->get('player');
         } else {
             return $this->redirectToRoute('new_player');
-        }
+        }*/
         $dartStats = new Dart170();
         $dateTime = new DateTime();
         $dateTime->format('Y-m-d H:i:s');
