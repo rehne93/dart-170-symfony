@@ -1,3 +1,11 @@
-# Dart 170 Server
-Simple Server application that saves your 170 average in rounds per finish.
-Simple, non secure, authentifaction implemented.
+# Dart Game Server
+Implements a simple PHP server containing different Dart games. 
+This project is mainly used to improve my PHP skills.
+# Games implemented
+Currently three games are available:
+- 170: Count the rounds you need to finish 170 Points and show the average of the last 7 days and all-time-average
+- Split Score: Sometimes also called halve it.
+- Around the Clock: Counts the rounds you need from 1->20 or 20->1.
+
+#Setup
+TODO

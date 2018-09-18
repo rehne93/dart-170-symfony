@@ -42,8 +42,6 @@ class AroundTheClockController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // TODO: Handling the data!
-            $this->logger->debug("Handling the data, yeah");
             $this->handleForm($form);
         }
 

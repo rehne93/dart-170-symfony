@@ -1,0 +1,32 @@
+<html>
+<head>
+    <!-- TODO Add Average Score -->
+    {% block stylesheets %}
+        <link href="../css/base.css" rel="stylesheet"/>
+    {% endblock %}
+</head>
+<body>
+<div class="baseStyle">
+    Hello {{ name }}! <br> You're successfully logged in! <br> <br>
+</div>
+<div class="baseStyle">
+    {{ currentScore }}
+</div>
+<div class="form">
+    {{ form_start(form,{'attr':{'id':'form_splitIt'}}) }}
+    <div class="baseStyle">
+        {{ form_row(form.score) }}
+    </div>
+    <br>
+    <div class="baseStyle">
+        {{ form_row(form.submit) }}
+    </div>
+    {{ form_end(form) }}
+</div>
+
+<div class="baseStyle">
+    Wirf auf: {{ currentTarget }}
+</div>
+
+</body>
+</html>

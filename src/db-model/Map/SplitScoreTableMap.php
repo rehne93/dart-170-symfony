@@ -2,8 +2,8 @@
 
 namespace Map;
 
-use \Player;
-use \PlayerQuery;
+use \SplitScore;
+use \SplitScoreQuery;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\InstancePoolTrait;
@@ -16,7 +16,7 @@ use Propel\Runtime\Map\TableMapTrait;
 
 
 /**
- * This class defines the structure of the 'player' table.
+ * This class defines the structure of the 'splitScore' table.
  *
  *
  *
@@ -26,7 +26,7 @@ use Propel\Runtime\Map\TableMapTrait;
  * (i.e. if it's a text column type).
  *
  */
-class PlayerTableMap extends TableMap
+class SplitScoreTableMap extends TableMap
 {
     use InstancePoolTrait;
     use TableMapTrait;
@@ -34,7 +34,7 @@ class PlayerTableMap extends TableMap
     /**
      * The (dot-path) name of this class
      */
-    const CLASS_NAME = '.Map.PlayerTableMap';
+    const CLASS_NAME = '.Map.SplitScoreTableMap';
 
     /**
      * The default database name for this class
@@ -44,17 +44,17 @@ class PlayerTableMap extends TableMap
     /**
      * The table name for this class
      */
-    const TABLE_NAME = 'player';
+    const TABLE_NAME = 'splitScore';
 
     /**
      * The related Propel class for this table
      */
-    const OM_CLASS = '\\Player';
+    const OM_CLASS = '\\SplitScore';
 
     /**
      * A class that can be returned by this tableMap
      */
-    const CLASS_DEFAULT = 'Player';
+    const CLASS_DEFAULT = 'SplitScore';
 
     /**
      * The total number of columns
@@ -74,17 +74,17 @@ class PlayerTableMap extends TableMap
     /**
      * the column name for the id field
      */
-    const COL_ID = 'player.id';
+    const COL_ID = 'splitScore.id';
 
     /**
-     * the column name for the name field
+     * the column name for the finalScore field
      */
-    const COL_NAME = 'player.name';
+    const COL_FINALSCORE = 'splitScore.finalScore';
 
     /**
-     * the column name for the password field
+     * the column name for the playerId field
      */
-    const COL_PASSWORD = 'player.password';
+    const COL_PLAYERID = 'splitScore.playerId';
 
     /**
      * The default string format for model objects of the related table
@@ -97,12 +97,12 @@ class PlayerTableMap extends TableMap
      * first dimension keys are the type constants
      * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
      */
-    protected static $fieldNames = array (
-        self::TYPE_PHPNAME       => array('Id', 'Name', 'Password', ),
-        self::TYPE_CAMELNAME     => array('id', 'name', 'password', ),
-        self::TYPE_COLNAME       => array(PlayerTableMap::COL_ID, PlayerTableMap::COL_NAME, PlayerTableMap::COL_PASSWORD, ),
-        self::TYPE_FIELDNAME     => array('id', 'name', 'password', ),
-        self::TYPE_NUM           => array(0, 1, 2, )
+    protected static $fieldNames = array(
+        self::TYPE_PHPNAME => array('Id', 'Finalscore', 'Playerid',),
+        self::TYPE_CAMELNAME => array('id', 'finalscore', 'playerid',),
+        self::TYPE_COLNAME => array(SplitScoreTableMap::COL_ID, SplitScoreTableMap::COL_FINALSCORE, SplitScoreTableMap::COL_PLAYERID,),
+        self::TYPE_FIELDNAME => array('id', 'finalScore', 'playerId',),
+        self::TYPE_NUM => array(0, 1, 2,)
     );
 
     /**
@@ -111,12 +111,12 @@ class PlayerTableMap extends TableMap
      * first dimension keys are the type constants
      * e.g. self::$fieldKeys[self::TYPE_PHPNAME]['Id'] = 0
      */
-    protected static $fieldKeys = array (
-        self::TYPE_PHPNAME       => array('Id' => 0, 'Name' => 1, 'Password' => 2, ),
-        self::TYPE_CAMELNAME     => array('id' => 0, 'name' => 1, 'password' => 2, ),
-        self::TYPE_COLNAME       => array(PlayerTableMap::COL_ID => 0, PlayerTableMap::COL_NAME => 1, PlayerTableMap::COL_PASSWORD => 2, ),
-        self::TYPE_FIELDNAME     => array('id' => 0, 'name' => 1, 'password' => 2, ),
-        self::TYPE_NUM           => array(0, 1, 2, )
+    protected static $fieldKeys = array(
+        self::TYPE_PHPNAME => array('Id' => 0, 'Finalscore' => 1, 'Playerid' => 2,),
+        self::TYPE_CAMELNAME => array('id' => 0, 'finalscore' => 1, 'playerid' => 2,),
+        self::TYPE_COLNAME => array(SplitScoreTableMap::COL_ID => 0, SplitScoreTableMap::COL_FINALSCORE => 1, SplitScoreTableMap::COL_PLAYERID => 2,),
+        self::TYPE_FIELDNAME => array('id' => 0, 'finalScore' => 1, 'playerId' => 2,),
+        self::TYPE_NUM => array(0, 1, 2,)
     );
 
     /**
@@ -129,16 +129,16 @@ class PlayerTableMap extends TableMap
     public function initialize()
     {
         // attributes
-        $this->setName('player');
-        $this->setPhpName('Player');
+        $this->setName('splitScore');
+        $this->setPhpName('SplitScore');
         $this->setIdentifierQuoting(false);
-        $this->setClassName('\\Player');
+        $this->setClassName('\\SplitScore');
         $this->setPackage('');
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
-        $this->addColumn('name', 'Name', 'VARCHAR', true, 255, null);
-        $this->addColumn('password', 'Password', 'VARCHAR', true, 255, null);
+        $this->addColumn('finalScore', 'Finalscore', 'INTEGER', true, null, null);
+        $this->addForeignKey('playerId', 'Playerid', 'INTEGER', 'player', 'id', true, null, null);
     } // initialize()
 
     /**
@@ -146,27 +146,13 @@ class PlayerTableMap extends TableMap
      */
     public function buildRelations()
     {
-        $this->addRelation('Game', '\\Game', RelationMap::ONE_TO_MANY, array (
-  0 =>
-  array (
-    0 => ':playerId',
-    1 => ':id',
-  ),
-), null, null, 'Games', false);
-        $this->addRelation('AroundTheClock', '\\AroundTheClock', RelationMap::ONE_TO_MANY, array (
-  0 =>
-  array (
-    0 => ':playerId',
-    1 => ':id',
-  ),
-), null, null, 'AroundTheClocks', false);
-        $this->addRelation('SplitScore', '\\SplitScore', RelationMap::ONE_TO_MANY, array(
+        $this->addRelation('Player', '\\Player', RelationMap::MANY_TO_ONE, array(
             0 =>
                 array(
                     0 => ':playerId',
                     1 => ':id',
                 ),
-        ), null, null, 'SplitScores', false);
+        ), null, null, null, false);
     } // buildRelations()
 
     /**
@@ -175,8 +161,8 @@ class PlayerTableMap extends TableMap
      * For tables with a single-column primary key, that simple pkey value will be returned.  For tables with
      * a multi-column primary key, a serialize()d version of the primary key will be returned.
      *
-     * @param array  $row       resultset row.
-     * @param int    $offset    The 0-based offset for reading from the resultset row.
+     * @param array $row resultset row.
+     * @param int $offset The 0-based offset for reading from the resultset row.
      * @param string $indexType One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                           TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM
      *
@@ -189,7 +175,7 @@ class PlayerTableMap extends TableMap
             return null;
         }
 
-        return null === $row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)] || is_scalar($row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)]) || is_callable([$row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)], '__toString']) ? (string) $row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)] : $row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+        return null === $row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)] || is_scalar($row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)]) || is_callable([$row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)], '__toString']) ? (string)$row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)] : $row[TableMap::TYPE_NUM == $indexType ? 0 + $offset : static::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
     }
 
     /**
@@ -197,8 +183,8 @@ class PlayerTableMap extends TableMap
      * For tables with a single-column primary key, that simple pkey value will be returned.  For tables with
      * a multi-column primary key, an array of the primary key columns will be returned.
      *
-     * @param array  $row       resultset row.
-     * @param int    $offset    The 0-based offset for reading from the resultset row.
+     * @param array $row resultset row.
+     * @param int $offset The 0-based offset for reading from the resultset row.
      * @param string $indexType One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                           TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM
      *
@@ -206,11 +192,9 @@ class PlayerTableMap extends TableMap
      */
     public static function getPrimaryKeyFromRow($row, $offset = 0, $indexType = TableMap::TYPE_NUM)
     {
-        return (int) $row[
-            $indexType == TableMap::TYPE_NUM
-                ? 0 + $offset
-                : self::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)
-        ];
+        return (int)$row[$indexType == TableMap::TYPE_NUM
+            ? 0 + $offset
+            : self::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
     }
 
     /**
@@ -226,36 +210,36 @@ class PlayerTableMap extends TableMap
      */
     public static function getOMClass($withPrefix = true)
     {
-        return $withPrefix ? PlayerTableMap::CLASS_DEFAULT : PlayerTableMap::OM_CLASS;
+        return $withPrefix ? SplitScoreTableMap::CLASS_DEFAULT : SplitScoreTableMap::OM_CLASS;
     }
 
     /**
      * Populates an object of the default type or an object that inherit from the default.
      *
-     * @param array  $row       row returned by DataFetcher->fetch().
-     * @param int    $offset    The 0-based offset for reading from the resultset row.
+     * @param array $row row returned by DataFetcher->fetch().
+     * @param int $offset The 0-based offset for reading from the resultset row.
      * @param string $indexType The index type of $row. Mostly DataFetcher->getIndexType().
-                                 One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
+     * One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                           TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *
      * @throws PropelException Any exceptions caught during processing will be
      *                         rethrown wrapped into a PropelException.
-     * @return array           (Player object, last column rank)
+     * @return array           (SplitScore object, last column rank)
      */
     public static function populateObject($row, $offset = 0, $indexType = TableMap::TYPE_NUM)
     {
-        $key = PlayerTableMap::getPrimaryKeyHashFromRow($row, $offset, $indexType);
-        if (null !== ($obj = PlayerTableMap::getInstanceFromPool($key))) {
+        $key = SplitScoreTableMap::getPrimaryKeyHashFromRow($row, $offset, $indexType);
+        if (null !== ($obj = SplitScoreTableMap::getInstanceFromPool($key))) {
             // We no longer rehydrate the object, since this can cause data loss.
             // See http://www.propelorm.org/ticket/509
             // $obj->hydrate($row, $offset, true); // rehydrate
-            $col = $offset + PlayerTableMap::NUM_HYDRATE_COLUMNS;
+            $col = $offset + SplitScoreTableMap::NUM_HYDRATE_COLUMNS;
         } else {
-            $cls = PlayerTableMap::OM_CLASS;
-            /** @var Player $obj */
+            $cls = SplitScoreTableMap::OM_CLASS;
+            /** @var SplitScore $obj */
             $obj = new $cls();
             $col = $obj->hydrate($row, $offset, false, $indexType);
-            PlayerTableMap::addInstanceToPool($obj, $key);
+            SplitScoreTableMap::addInstanceToPool($obj, $key);
         }
 
         return array($obj, $col);
@@ -278,23 +262,24 @@ class PlayerTableMap extends TableMap
         $cls = static::getOMClass(false);
         // populate the object(s)
         while ($row = $dataFetcher->fetch()) {
-            $key = PlayerTableMap::getPrimaryKeyHashFromRow($row, 0, $dataFetcher->getIndexType());
-            if (null !== ($obj = PlayerTableMap::getInstanceFromPool($key))) {
+            $key = SplitScoreTableMap::getPrimaryKeyHashFromRow($row, 0, $dataFetcher->getIndexType());
+            if (null !== ($obj = SplitScoreTableMap::getInstanceFromPool($key))) {
                 // We no longer rehydrate the object, since this can cause data loss.
                 // See http://www.propelorm.org/ticket/509
                 // $obj->hydrate($row, 0, true); // rehydrate
                 $results[] = $obj;
             } else {
-                /** @var Player $obj */
+                /** @var SplitScore $obj */
                 $obj = new $cls();
                 $obj->hydrate($row);
                 $results[] = $obj;
-                PlayerTableMap::addInstanceToPool($obj, $key);
+                SplitScoreTableMap::addInstanceToPool($obj, $key);
             } // if key exists
         }
 
         return $results;
     }
+
     /**
      * Add all the columns needed to create a new object.
      *
@@ -303,20 +288,20 @@ class PlayerTableMap extends TableMap
      * on demand.
      *
      * @param Criteria $criteria object containing the columns to add.
-     * @param string   $alias    optional table alias
+     * @param string $alias optional table alias
      * @throws PropelException Any exceptions caught during processing will be
      *                         rethrown wrapped into a PropelException.
      */
     public static function addSelectColumns(Criteria $criteria, $alias = null)
     {
         if (null === $alias) {
-            $criteria->addSelectColumn(PlayerTableMap::COL_ID);
-            $criteria->addSelectColumn(PlayerTableMap::COL_NAME);
-            $criteria->addSelectColumn(PlayerTableMap::COL_PASSWORD);
+            $criteria->addSelectColumn(SplitScoreTableMap::COL_ID);
+            $criteria->addSelectColumn(SplitScoreTableMap::COL_FINALSCORE);
+            $criteria->addSelectColumn(SplitScoreTableMap::COL_PLAYERID);
         } else {
             $criteria->addSelectColumn($alias . '.id');
-            $criteria->addSelectColumn($alias . '.name');
-            $criteria->addSelectColumn($alias . '.password');
+            $criteria->addSelectColumn($alias . '.finalScore');
+            $criteria->addSelectColumn($alias . '.playerId');
         }
     }
 
@@ -329,7 +314,7 @@ class PlayerTableMap extends TableMap
      */
     public static function getTableMap()
     {
-        return Propel::getServiceContainer()->getDatabaseMap(PlayerTableMap::DATABASE_NAME)->getTable(PlayerTableMap::TABLE_NAME);
+        return Propel::getServiceContainer()->getDatabaseMap(SplitScoreTableMap::DATABASE_NAME)->getTable(SplitScoreTableMap::TABLE_NAME);
     }
 
     /**
@@ -337,16 +322,16 @@ class PlayerTableMap extends TableMap
      */
     public static function buildTableMap()
     {
-        $dbMap = Propel::getServiceContainer()->getDatabaseMap(PlayerTableMap::DATABASE_NAME);
-        if (!$dbMap->hasTable(PlayerTableMap::TABLE_NAME)) {
-            $dbMap->addTableObject(new PlayerTableMap());
+        $dbMap = Propel::getServiceContainer()->getDatabaseMap(SplitScoreTableMap::DATABASE_NAME);
+        if (!$dbMap->hasTable(SplitScoreTableMap::TABLE_NAME)) {
+            $dbMap->addTableObject(new SplitScoreTableMap());
         }
     }
 
     /**
-     * Performs a DELETE on the database, given a Player or Criteria object OR a primary key value.
+     * Performs a DELETE on the database, given a SplitScore or Criteria object OR a primary key value.
      *
-     * @param mixed               $values Criteria or Player object or primary key or array of primary keys
+     * @param mixed $values Criteria or SplitScore object or primary key or array of primary keys
      *              which is used to create the DELETE statement
      * @param  ConnectionInterface $con the connection to use
      * @return int             The number of affected rows (if supported by underlying database driver).  This includes CASCADE-related rows
@@ -354,30 +339,30 @@ class PlayerTableMap extends TableMap
      * @throws PropelException Any exceptions caught during processing will be
      *                         rethrown wrapped into a PropelException.
      */
-     public static function doDelete($values, ConnectionInterface $con = null)
-     {
+    public static function doDelete($values, ConnectionInterface $con = null)
+    {
         if (null === $con) {
-            $con = Propel::getServiceContainer()->getWriteConnection(PlayerTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(SplitScoreTableMap::DATABASE_NAME);
         }
 
         if ($values instanceof Criteria) {
             // rename for clarity
             $criteria = $values;
-        } elseif ($values instanceof \Player) { // it's a model object
+        } elseif ($values instanceof \SplitScore) { // it's a model object
             // create criteria based on pk values
             $criteria = $values->buildPkeyCriteria();
         } else { // it's a primary key, or an array of pks
-            $criteria = new Criteria(PlayerTableMap::DATABASE_NAME);
-            $criteria->add(PlayerTableMap::COL_ID, (array) $values, Criteria::IN);
+            $criteria = new Criteria(SplitScoreTableMap::DATABASE_NAME);
+            $criteria->add(SplitScoreTableMap::COL_ID, (array)$values, Criteria::IN);
         }
 
-        $query = PlayerQuery::create()->mergeWith($criteria);
+        $query = SplitScoreQuery::create()->mergeWith($criteria);
 
         if ($values instanceof Criteria) {
-            PlayerTableMap::clearInstancePool();
+            SplitScoreTableMap::clearInstancePool();
         } elseif (!is_object($values)) { // it's a primary key, or an array of pks
-            foreach ((array) $values as $singleval) {
-                PlayerTableMap::removeInstanceFromPool($singleval);
+            foreach ((array)$values as $singleval) {
+                SplitScoreTableMap::removeInstanceFromPool($singleval);
             }
         }
 
@@ -385,20 +370,20 @@ class PlayerTableMap extends TableMap
     }
 
     /**
-     * Deletes all rows from the player table.
+     * Deletes all rows from the splitScore table.
      *
      * @param ConnectionInterface $con the connection to use
      * @return int The number of affected rows (if supported by underlying database driver).
      */
     public static function doDeleteAll(ConnectionInterface $con = null)
     {
-        return PlayerQuery::create()->doDeleteAll($con);
+        return SplitScoreQuery::create()->doDeleteAll($con);
     }
 
     /**
-     * Performs an INSERT on the database, given a Player or Criteria object.
+     * Performs an INSERT on the database, given a SplitScore or Criteria object.
      *
-     * @param mixed               $criteria Criteria or Player object containing data that is used to create the INSERT statement.
+     * @param mixed $criteria Criteria or SplitScore object containing data that is used to create the INSERT statement.
      * @param ConnectionInterface $con the ConnectionInterface connection to use
      * @return mixed           The new primary key.
      * @throws PropelException Any exceptions caught during processing will be
@@ -407,22 +392,22 @@ class PlayerTableMap extends TableMap
     public static function doInsert($criteria, ConnectionInterface $con = null)
     {
         if (null === $con) {
-            $con = Propel::getServiceContainer()->getWriteConnection(PlayerTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(SplitScoreTableMap::DATABASE_NAME);
         }
 
         if ($criteria instanceof Criteria) {
             $criteria = clone $criteria; // rename for clarity
         } else {
-            $criteria = $criteria->buildCriteria(); // build Criteria from Player object
+            $criteria = $criteria->buildCriteria(); // build Criteria from SplitScore object
         }
 
-        if ($criteria->containsKey(PlayerTableMap::COL_ID) && $criteria->keyContainsValue(PlayerTableMap::COL_ID) ) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key ('.PlayerTableMap::COL_ID.')');
+        if ($criteria->containsKey(SplitScoreTableMap::COL_ID) && $criteria->keyContainsValue(SplitScoreTableMap::COL_ID)) {
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . SplitScoreTableMap::COL_ID . ')');
         }
 
 
         // Set the correct dbName
-        $query = PlayerQuery::create()->mergeWith($criteria);
+        $query = SplitScoreQuery::create()->mergeWith($criteria);
 
         // use transaction because $criteria could contain info
         // for more than one table (I guess, conceivably)
@@ -431,7 +416,7 @@ class PlayerTableMap extends TableMap
         });
     }
 
-} // PlayerTableMap
+} // SplitScoreTableMap
 // This is the static code needed to register the TableMap for this table with the main Propel class.
 //
-PlayerTableMap::buildTableMap();
+SplitScoreTableMap::buildTableMap();

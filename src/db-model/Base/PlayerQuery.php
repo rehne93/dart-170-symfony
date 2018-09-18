@@ -56,7 +56,17 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildPlayerQuery rightJoinWithAroundTheClock() Adds a RIGHT JOIN clause and with to the query using the AroundTheClock relation
  * @method     ChildPlayerQuery innerJoinWithAroundTheClock() Adds a INNER JOIN clause and with to the query using the AroundTheClock relation
  *
- * @method     \GameQuery|\AroundTheClockQuery endUse() Finalizes a secondary criteria and merges it with its primary Criteria
+ * @method     ChildPlayerQuery leftJoinSplitScore($relationAlias = null) Adds a LEFT JOIN clause to the query using the SplitScore relation
+ * @method     ChildPlayerQuery rightJoinSplitScore($relationAlias = null) Adds a RIGHT JOIN clause to the query using the SplitScore relation
+ * @method     ChildPlayerQuery innerJoinSplitScore($relationAlias = null) Adds a INNER JOIN clause to the query using the SplitScore relation
+ *
+ * @method     ChildPlayerQuery joinWithSplitScore($joinType = Criteria::INNER_JOIN) Adds a join clause and with to the query using the SplitScore relation
+ *
+ * @method     ChildPlayerQuery leftJoinWithSplitScore() Adds a LEFT JOIN clause and with to the query using the SplitScore relation
+ * @method     ChildPlayerQuery rightJoinWithSplitScore() Adds a RIGHT JOIN clause and with to the query using the SplitScore relation
+ * @method     ChildPlayerQuery innerJoinWithSplitScore() Adds a INNER JOIN clause and with to the query using the SplitScore relation
+ *
+ * @method     \GameQuery|\AroundTheClockQuery|\SplitScoreQuery endUse() Finalizes a secondary criteria and merges it with its primary Criteria
  *
  * @method     ChildPlayer findOne(ConnectionInterface $con = null) Return the first ChildPlayer matching the query
  * @method     ChildPlayer findOneOrCreate(ConnectionInterface $con = null) Return the first ChildPlayer matching the query, or a new ChildPlayer object populated from the query conditions when no match is found
@@ -64,7 +74,6 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildPlayer findOneById(int $id) Return the first ChildPlayer filtered by the id column
  * @method     ChildPlayer findOneByName(string $name) Return the first ChildPlayer filtered by the name column
  * @method     ChildPlayer findOneByPassword(string $password) Return the first ChildPlayer filtered by the password column *
-
  * @method     ChildPlayer requirePk($key, ConnectionInterface $con = null) Return the ChildPlayer by primary key and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildPlayer requireOne(ConnectionInterface $con = null) Return the first ChildPlayer matching the query and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  *
@@ -499,6 +508,79 @@ abstract class PlayerQuery extends ModelCriteria
         return $this
             ->joinAroundTheClock($relationAlias, $joinType)
             ->useQuery($relationAlias ? $relationAlias : 'AroundTheClock', '\AroundTheClockQuery');
+    }
+
+    /**
+     * Filter the query by a related \SplitScore object
+     *
+     * @param \SplitScore|ObjectCollection $splitScore the related object to use as filter
+     * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return ChildPlayerQuery The current query, for fluid interface
+     */
+    public function filterBySplitScore($splitScore, $comparison = null)
+    {
+        if ($splitScore instanceof \SplitScore) {
+            return $this
+                ->addUsingAlias(PlayerTableMap::COL_ID, $splitScore->getPlayerid(), $comparison);
+        } elseif ($splitScore instanceof ObjectCollection) {
+            return $this
+                ->useSplitScoreQuery()
+                ->filterByPrimaryKeys($splitScore->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterBySplitScore() only accepts arguments of type \SplitScore or Collection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the SplitScore relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return $this|ChildPlayerQuery The current query, for fluid interface
+     */
+    public function joinSplitScore($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('SplitScore');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'SplitScore');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the SplitScore relation SplitScore object
+     *
+     * @see useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return \SplitScoreQuery A secondary query class using the current class as primary query
+     */
+    public function useSplitScoreQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    {
+        return $this
+            ->joinSplitScore($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'SplitScore', '\SplitScoreQuery');
     }
 
     /**

@@ -8,11 +8,14 @@ use \Game as ChildGame;
 use \GameQuery as ChildGameQuery;
 use \Player as ChildPlayer;
 use \PlayerQuery as ChildPlayerQuery;
+use \SplitScore as ChildSplitScore;
+use \SplitScoreQuery as ChildSplitScoreQuery;
 use \Exception;
 use \PDO;
 use Map\AroundTheClockTableMap;
 use Map\GameTableMap;
 use Map\PlayerTableMap;
+use Map\SplitScoreTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -101,6 +104,12 @@ abstract class Player implements ActiveRecordInterface
     protected $collAroundTheClocksPartial;
 
     /**
+     * @var        ObjectCollection|ChildSplitScore[] Collection to store aggregation of ChildSplitScore objects.
+     */
+    protected $collSplitScores;
+    protected $collSplitScoresPartial;
+
+    /**
      * Flag to prevent endless save loop, if this object is referenced
      * by another object which falls in this transaction.
      *
@@ -119,6 +128,12 @@ abstract class Player implements ActiveRecordInterface
      * @var ObjectCollection|ChildAroundTheClock[]
      */
     protected $aroundTheClocksScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var ObjectCollection|ChildSplitScore[]
+     */
+    protected $splitScoresScheduledForDeletion = null;
 
     /**
      * Initializes internal state of Base\Player object.
@@ -552,6 +567,8 @@ abstract class Player implements ActiveRecordInterface
 
             $this->collAroundTheClocks = null;
 
+            $this->collSplitScores = null;
+
         } // if (deep)
     }
 
@@ -694,6 +711,23 @@ abstract class Player implements ActiveRecordInterface
 
             if ($this->collAroundTheClocks !== null) {
                 foreach ($this->collAroundTheClocks as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->splitScoresScheduledForDeletion !== null) {
+                if (!$this->splitScoresScheduledForDeletion->isEmpty()) {
+                    \SplitScoreQuery::create()
+                        ->filterByPrimaryKeys($this->splitScoresScheduledForDeletion->getPrimaryKeys(false))
+                        ->delete($con);
+                    $this->splitScoresScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collSplitScores !== null) {
+                foreach ($this->collSplitScores as $referrerFK) {
                     if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
                         $affectedRows += $referrerFK->save($con);
                     }
@@ -895,6 +929,21 @@ abstract class Player implements ActiveRecordInterface
                 }
 
                 $result[$key] = $this->collAroundTheClocks->toArray(null, false, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collSplitScores) {
+
+                switch ($keyType) {
+                    case TableMap::TYPE_CAMELNAME:
+                        $key = 'splitScores';
+                        break;
+                    case TableMap::TYPE_FIELDNAME:
+                        $key = 'splitScores';
+                        break;
+                    default:
+                        $key = 'SplitScores';
+                }
+
+                $result[$key] = $this->collSplitScores->toArray(null, false, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
             }
         }
 
@@ -1130,6 +1179,12 @@ abstract class Player implements ActiveRecordInterface
                 }
             }
 
+            foreach ($this->getSplitScores() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addSplitScore($relObj->copy($deepCopy));
+                }
+            }
+
         } // if ($deepCopy)
 
         if ($makeNew) {
@@ -1177,6 +1232,10 @@ abstract class Player implements ActiveRecordInterface
         }
         if ('AroundTheClock' == $relationName) {
             $this->initAroundTheClocks();
+            return;
+        }
+        if ('SplitScore' == $relationName) {
+            $this->initSplitScores();
             return;
         }
     }
@@ -1632,6 +1691,231 @@ abstract class Player implements ActiveRecordInterface
     }
 
     /**
+     * Clears out the collSplitScores collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return void
+     * @see        addSplitScores()
+     */
+    public function clearSplitScores()
+    {
+        $this->collSplitScores = null; // important to set this to NULL since that means it is uninitialized
+    }
+
+    /**
+     * Reset is the collSplitScores collection loaded partially.
+     */
+    public function resetPartialSplitScores($v = true)
+    {
+        $this->collSplitScoresPartial = $v;
+    }
+
+    /**
+     * Initializes the collSplitScores collection.
+     *
+     * By default this just sets the collSplitScores collection to an empty array (like clearcollSplitScores());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param      boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initSplitScores($overrideExisting = true)
+    {
+        if (null !== $this->collSplitScores && !$overrideExisting) {
+            return;
+        }
+
+        $collectionClassName = SplitScoreTableMap::getTableMap()->getCollectionClassName();
+
+        $this->collSplitScores = new $collectionClassName;
+        $this->collSplitScores->setModel('\SplitScore');
+    }
+
+    /**
+     * Gets an array of ChildSplitScore objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this ChildPlayer is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param      Criteria $criteria optional Criteria object to narrow the query
+     * @param      ConnectionInterface $con optional connection object
+     * @return ObjectCollection|ChildSplitScore[] List of ChildSplitScore objects
+     * @throws PropelException
+     */
+    public function getSplitScores(Criteria $criteria = null, ConnectionInterface $con = null)
+    {
+        $partial = $this->collSplitScoresPartial && !$this->isNew();
+        if (null === $this->collSplitScores || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collSplitScores) {
+                // return empty collection
+                $this->initSplitScores();
+            } else {
+                $collSplitScores = ChildSplitScoreQuery::create(null, $criteria)
+                    ->filterByPlayer($this)
+                    ->find($con);
+
+                if (null !== $criteria) {
+                    if (false !== $this->collSplitScoresPartial && count($collSplitScores)) {
+                        $this->initSplitScores(false);
+
+                        foreach ($collSplitScores as $obj) {
+                            if (false == $this->collSplitScores->contains($obj)) {
+                                $this->collSplitScores->append($obj);
+                            }
+                        }
+
+                        $this->collSplitScoresPartial = true;
+                    }
+
+                    return $collSplitScores;
+                }
+
+                if ($partial && $this->collSplitScores) {
+                    foreach ($this->collSplitScores as $obj) {
+                        if ($obj->isNew()) {
+                            $collSplitScores[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collSplitScores = $collSplitScores;
+                $this->collSplitScoresPartial = false;
+            }
+        }
+
+        return $this->collSplitScores;
+    }
+
+    /**
+     * Sets a collection of ChildSplitScore objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param      Collection $splitScores A Propel collection.
+     * @param      ConnectionInterface $con Optional connection object
+     * @return $this|ChildPlayer The current object (for fluent API support)
+     */
+    public function setSplitScores(Collection $splitScores, ConnectionInterface $con = null)
+    {
+        /** @var ChildSplitScore[] $splitScoresToDelete */
+        $splitScoresToDelete = $this->getSplitScores(new Criteria(), $con)->diff($splitScores);
+
+
+        $this->splitScoresScheduledForDeletion = $splitScoresToDelete;
+
+        foreach ($splitScoresToDelete as $splitScoreRemoved) {
+            $splitScoreRemoved->setPlayer(null);
+        }
+
+        $this->collSplitScores = null;
+        foreach ($splitScores as $splitScore) {
+            $this->addSplitScore($splitScore);
+        }
+
+        $this->collSplitScores = $splitScores;
+        $this->collSplitScoresPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related SplitScore objects.
+     *
+     * @param      Criteria $criteria
+     * @param      boolean $distinct
+     * @param      ConnectionInterface $con
+     * @return int             Count of related SplitScore objects.
+     * @throws PropelException
+     */
+    public function countSplitScores(Criteria $criteria = null, $distinct = false, ConnectionInterface $con = null)
+    {
+        $partial = $this->collSplitScoresPartial && !$this->isNew();
+        if (null === $this->collSplitScores || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collSplitScores) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getSplitScores());
+            }
+
+            $query = ChildSplitScoreQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByPlayer($this)
+                ->count($con);
+        }
+
+        return count($this->collSplitScores);
+    }
+
+    /**
+     * Method called to associate a ChildSplitScore object to this object
+     * through the ChildSplitScore foreign key attribute.
+     *
+     * @param  ChildSplitScore $l ChildSplitScore
+     * @return $this|\Player The current object (for fluent API support)
+     */
+    public function addSplitScore(ChildSplitScore $l)
+    {
+        if ($this->collSplitScores === null) {
+            $this->initSplitScores();
+            $this->collSplitScoresPartial = true;
+        }
+
+        if (!$this->collSplitScores->contains($l)) {
+            $this->doAddSplitScore($l);
+
+            if ($this->splitScoresScheduledForDeletion and $this->splitScoresScheduledForDeletion->contains($l)) {
+                $this->splitScoresScheduledForDeletion->remove($this->splitScoresScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ChildSplitScore $splitScore The ChildSplitScore object to add.
+     */
+    protected function doAddSplitScore(ChildSplitScore $splitScore)
+    {
+        $this->collSplitScores[] = $splitScore;
+        $splitScore->setPlayer($this);
+    }
+
+    /**
+     * @param  ChildSplitScore $splitScore The ChildSplitScore object to remove.
+     * @return $this|ChildPlayer The current object (for fluent API support)
+     */
+    public function removeSplitScore(ChildSplitScore $splitScore)
+    {
+        if ($this->getSplitScores()->contains($splitScore)) {
+            $pos = $this->collSplitScores->search($splitScore);
+            $this->collSplitScores->remove($pos);
+            if (null === $this->splitScoresScheduledForDeletion) {
+                $this->splitScoresScheduledForDeletion = clone $this->collSplitScores;
+                $this->splitScoresScheduledForDeletion->clear();
+            }
+            $this->splitScoresScheduledForDeletion[] = clone $splitScore;
+            $splitScore->setPlayer(null);
+        }
+
+        return $this;
+    }
+
+    /**
      * Clears the current object, sets all attributes to their default values and removes
      * outgoing references as well as back-references (from other objects to this one. Results probably in a database
      * change of those foreign objects when you call `save` there).
@@ -1669,10 +1953,16 @@ abstract class Player implements ActiveRecordInterface
                     $o->clearAllReferences($deep);
                 }
             }
+            if ($this->collSplitScores) {
+                foreach ($this->collSplitScores as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
         } // if ($deep)
 
         $this->collGames = null;
         $this->collAroundTheClocks = null;
+        $this->collSplitScores = null;
     }
 
     /**

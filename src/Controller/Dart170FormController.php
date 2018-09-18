@@ -41,13 +41,6 @@ class Dart170FormController extends AbstractController
         if ($this->playerName === '') {
             return $this->redirectToRoute('new_player');
         }
-       /* $cookie = $request->cookies;
-        if ($cookie->has('player')) {
-            $this->logger->debug("Found Player");
-            $this->playerName = $cookie->get('player');
-        } else {
-            return $this->redirectToRoute('new_player');
-        }*/
         $dartStats = new Dart170();
         $dateTime = new DateTime();
         $dateTime->format('Y-m-d H:i:s');

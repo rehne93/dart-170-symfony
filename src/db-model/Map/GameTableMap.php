@@ -149,7 +149,7 @@ class GameTableMap extends TableMap
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
         $this->addColumn('gameType', 'Gametype', 'VARCHAR', true, 255, null);
         $this->addColumn('rounds', 'Rounds', 'INTEGER', true, null, null);
-        $this->addColumn('date', 'Date', 'DATE', true, null, null);
+        $this->addColumn('date', 'Date', 'TIMESTAMP', true, null, null);
         $this->addForeignKey('playerId', 'Playerid', 'INTEGER', 'player', 'id', true, null, null);
     } // initialize()
 

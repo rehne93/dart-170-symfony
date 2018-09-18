@@ -2,13 +2,12 @@
 
 namespace Base;
 
-use \GameQuery as ChildGameQuery;
 use \Player as ChildPlayer;
 use \PlayerQuery as ChildPlayerQuery;
-use \DateTime;
+use \SplitScoreQuery as ChildSplitScoreQuery;
 use \Exception;
 use \PDO;
-use Map\GameTableMap;
+use Map\SplitScoreTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -20,21 +19,20 @@ use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Parser\AbstractParser;
-use Propel\Runtime\Util\PropelDateTime;
 
 /**
- * Base class that represents a row from the 'game' table.
+ * Base class that represents a row from the 'splitScore' table.
  *
  *
  *
  * @package    propel.generator..Base
  */
-abstract class Game implements ActiveRecordInterface
+abstract class SplitScore implements ActiveRecordInterface
 {
     /**
      * TableMap class name
      */
-    const TABLE_MAP = '\\Map\\GameTableMap';
+    const TABLE_MAP = '\\Map\\SplitScoreTableMap';
 
 
     /**
@@ -71,25 +69,11 @@ abstract class Game implements ActiveRecordInterface
     protected $id;
 
     /**
-     * The value for the gametype field.
-     *
-     * @var        string
-     */
-    protected $gametype;
-
-    /**
-     * The value for the rounds field.
+     * The value for the finalscore field.
      *
      * @var        int
      */
-    protected $rounds;
-
-    /**
-     * The value for the date field.
-     *
-     * @var        DateTime
-     */
-    protected $date;
+    protected $finalscore;
 
     /**
      * The value for the playerid field.
@@ -112,7 +96,7 @@ abstract class Game implements ActiveRecordInterface
     protected $alreadyInSave = false;
 
     /**
-     * Initializes internal state of Base\Game object.
+     * Initializes internal state of Base\SplitScore object.
      */
     public function __construct()
     {
@@ -131,7 +115,7 @@ abstract class Game implements ActiveRecordInterface
     /**
      * Has specified column been modified?
      *
-     * @param  string  $col column fully qualified name (TableMap::TYPE_COLNAME), e.g. Book::AUTHOR_ID
+     * @param  string $col column fully qualified name (TableMap::TYPE_COLNAME), e.g. Book::AUTHOR_ID
      * @return boolean True if $col has been modified.
      */
     public function isColumnModified($col)
@@ -168,7 +152,7 @@ abstract class Game implements ActiveRecordInterface
      */
     public function setNew($b)
     {
-        $this->new = (boolean) $b;
+        $this->new = (boolean)$b;
     }
 
     /**
@@ -187,7 +171,7 @@ abstract class Game implements ActiveRecordInterface
      */
     public function setDeleted($b)
     {
-        $this->deleted = (boolean) $b;
+        $this->deleted = (boolean)$b;
     }
 
     /**
@@ -207,11 +191,11 @@ abstract class Game implements ActiveRecordInterface
     }
 
     /**
-     * Compares this with another <code>Game</code> instance.  If
-     * <code>obj</code> is an instance of <code>Game</code>, delegates to
-     * <code>equals(Game)</code>.  Otherwise, returns <code>false</code>.
+     * Compares this with another <code>SplitScore</code> instance.  If
+     * <code>obj</code> is an instance of <code>SplitScore</code>, delegates to
+     * <code>equals(SplitScore)</code>.  Otherwise, returns <code>false</code>.
      *
-     * @param  mixed   $obj The object to compare to.
+     * @param  mixed $obj The object to compare to.
      * @return boolean Whether equal to the object specified.
      */
     public function equals($obj)
@@ -244,7 +228,7 @@ abstract class Game implements ActiveRecordInterface
     /**
      * Checks the existence of a virtual column in this object
      *
-     * @param  string  $name The virtual column name
+     * @param  string $name The virtual column name
      * @return boolean
      */
     public function hasVirtualColumn($name)
@@ -272,10 +256,10 @@ abstract class Game implements ActiveRecordInterface
     /**
      * Set the value of a virtual column in this object
      *
-     * @param string $name  The virtual column name
-     * @param mixed  $value The value to give to the virtual column
+     * @param string $name The virtual column name
+     * @param mixed $value The value to give to the virtual column
      *
-     * @return $this|Game The current object, for fluid interface
+     * @return $this|SplitScore The current object, for fluid interface
      */
     public function setVirtualColumn($name, $value)
     {
@@ -287,8 +271,8 @@ abstract class Game implements ActiveRecordInterface
     /**
      * Logs a message using Propel::log().
      *
-     * @param  string  $msg
-     * @param  int     $priority One of the Propel::LOG_* logging levels
+     * @param  string $msg
+     * @param  int $priority One of the Propel::LOG_* logging levels
      * @return boolean
      */
     protected function log($msg, $priority = Propel::LOG_INFO)
@@ -304,7 +288,7 @@ abstract class Game implements ActiveRecordInterface
      *  => {"Id":9012,"Title":"Don Juan","ISBN":"0140422161","Price":12.99,"PublisherId":1234,"AuthorId":5678}');
      * </code>
      *
-     * @param  mixed   $parser                 A AbstractParser instance, or a format name ('XML', 'YAML', 'JSON', 'CSV')
+     * @param  mixed $parser A AbstractParser instance, or a format name ('XML', 'YAML', 'JSON', 'CSV')
      * @param  boolean $includeLazyLoadColumns (optional) Whether to include lazy load(ed) columns. Defaults to TRUE.
      * @return string  The exported data
      */
@@ -329,7 +313,7 @@ abstract class Game implements ActiveRecordInterface
         $propertyNames = [];
         $serializableProperties = array_diff($cls->getProperties(), $cls->getProperties(\ReflectionProperty::IS_STATIC));
 
-        foreach($serializableProperties as $property) {
+        foreach ($serializableProperties as $property) {
             $propertyNames[] = $property->getName();
         }
 
@@ -347,43 +331,13 @@ abstract class Game implements ActiveRecordInterface
     }
 
     /**
-     * Get the [gametype] column value.
-     *
-     * @return string
-     */
-    public function getGametype()
-    {
-        return $this->gametype;
-    }
-
-    /**
-     * Get the [rounds] column value.
+     * Get the [finalscore] column value.
      *
      * @return int
      */
-    public function getRounds()
+    public function getFinalscore()
     {
-        return $this->rounds;
-    }
-
-    /**
-     * Get the [optionally formatted] temporal [date] column value.
-     *
-     *
-     * @param      string|null $format The date/time format string (either date()-style or strftime()-style).
-     *                            If format is NULL, then the raw DateTime object will be returned.
-     *
-     * @return string|DateTime Formatted date/time value as string or DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
-     *
-     * @throws PropelException - if unable to parse/validate the date/time value.
-     */
-    public function getDate($format = NULL)
-    {
-        if ($format === null) {
-            return $this->date;
-        } else {
-            return $this->date instanceof \DateTimeInterface ? $this->date->format($format) : null;
-        }
+        return $this->finalscore;
     }
 
     /**
@@ -400,97 +354,57 @@ abstract class Game implements ActiveRecordInterface
      * Set the value of [id] column.
      *
      * @param int $v new value
-     * @return $this|\Game The current object (for fluent API support)
+     * @return $this|\SplitScore The current object (for fluent API support)
      */
     public function setId($v)
     {
         if ($v !== null) {
-            $v = (int) $v;
+            $v = (int)$v;
         }
 
         if ($this->id !== $v) {
             $this->id = $v;
-            $this->modifiedColumns[GameTableMap::COL_ID] = true;
+            $this->modifiedColumns[SplitScoreTableMap::COL_ID] = true;
         }
 
         return $this;
     } // setId()
 
     /**
-     * Set the value of [gametype] column.
-     *
-     * @param string $v new value
-     * @return $this|\Game The current object (for fluent API support)
-     */
-    public function setGametype($v)
-    {
-        if ($v !== null) {
-            $v = (string) $v;
-        }
-
-        if ($this->gametype !== $v) {
-            $this->gametype = $v;
-            $this->modifiedColumns[GameTableMap::COL_GAMETYPE] = true;
-        }
-
-        return $this;
-    } // setGametype()
-
-    /**
-     * Set the value of [rounds] column.
+     * Set the value of [finalscore] column.
      *
      * @param int $v new value
-     * @return $this|\Game The current object (for fluent API support)
+     * @return $this|\SplitScore The current object (for fluent API support)
      */
-    public function setRounds($v)
+    public function setFinalscore($v)
     {
         if ($v !== null) {
-            $v = (int) $v;
+            $v = (int)$v;
         }
 
-        if ($this->rounds !== $v) {
-            $this->rounds = $v;
-            $this->modifiedColumns[GameTableMap::COL_ROUNDS] = true;
+        if ($this->finalscore !== $v) {
+            $this->finalscore = $v;
+            $this->modifiedColumns[SplitScoreTableMap::COL_FINALSCORE] = true;
         }
 
         return $this;
-    } // setRounds()
-
-    /**
-     * Sets the value of [date] column to a normalized version of the date/time value specified.
-     *
-     * @param  mixed $v string, integer (timestamp), or \DateTimeInterface value.
-     *               Empty strings are treated as NULL.
-     * @return $this|\Game The current object (for fluent API support)
-     */
-    public function setDate($v)
-    {
-        $dt = PropelDateTime::newInstance($v, null, 'DateTime');
-        if ($this->date !== null || $dt !== null) {
-            if ($this->date === null || $dt === null || $dt->format("Y-m-d H:i:s.u") !== $this->date->format("Y-m-d H:i:s.u")) {
-                $this->date = $dt === null ? null : clone $dt;
-                $this->modifiedColumns[GameTableMap::COL_DATE] = true;
-            }
-        } // if either are not null
-
-        return $this;
-    } // setDate()
+    } // setFinalscore()
 
     /**
      * Set the value of [playerid] column.
      *
      * @param int $v new value
-     * @return $this|\Game The current object (for fluent API support)
+     * @return $this|\SplitScore The current object (for fluent API support)
      */
     public function setPlayerid($v)
     {
         if ($v !== null) {
-            $v = (int) $v;
+            $v = (int)$v;
         }
 
         if ($this->playerid !== $v) {
             $this->playerid = $v;
-            $this->modifiedColumns[GameTableMap::COL_PLAYERID] = true;
+            $this->modifiedColumns[SplitScoreTableMap::COL_PLAYERID] = true;
         }
 
         if ($this->aPlayer !== null && $this->aPlayer->getId() !== $v) {
@@ -522,11 +436,11 @@ abstract class Game implements ActiveRecordInterface
      * for results of JOIN queries where the resultset row includes columns from two or
      * more tables.
      *
-     * @param array   $row       The row returned by DataFetcher->fetch().
-     * @param int     $startcol  0-based offset column which indicates which restultset column to start with.
+     * @param array $row The row returned by DataFetcher->fetch().
+     * @param int $startcol 0-based offset column which indicates which restultset column to start with.
      * @param boolean $rehydrate Whether this object is being re-hydrated from the database.
-     * @param string  $indexType The index type of $row. Mostly DataFetcher->getIndexType().
-                                  One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
+     * @param string $indexType The index type of $row. Mostly DataFetcher->getIndexType().
+     * One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                            TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *
      * @return int             next starting column
@@ -536,23 +450,14 @@ abstract class Game implements ActiveRecordInterface
     {
         try {
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : GameTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->id = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : SplitScoreTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->id = (null !== $col) ? (int)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : GameTableMap::translateFieldName('Gametype', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->gametype = (null !== $col) ? (string) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : SplitScoreTableMap::translateFieldName('Finalscore', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->finalscore = (null !== $col) ? (int)$col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : GameTableMap::translateFieldName('Rounds', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->rounds = (null !== $col) ? (int) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : GameTableMap::translateFieldName('Date', TableMap::TYPE_PHPNAME, $indexType)];
-            if ($col === '0000-00-00 00:00:00') {
-                $col = null;
-            }
-            $this->date = (null !== $col) ? PropelDateTime::newInstance($col, null, 'DateTime') : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 4 + $startcol : GameTableMap::translateFieldName('Playerid', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->playerid = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : SplitScoreTableMap::translateFieldName('Playerid', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->playerid = (null !== $col) ? (int)$col : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -561,10 +466,10 @@ abstract class Game implements ActiveRecordInterface
                 $this->ensureConsistency();
             }
 
-            return $startcol + 5; // 5 = GameTableMap::NUM_HYDRATE_COLUMNS.
+            return $startcol + 3; // 3 = SplitScoreTableMap::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException(sprintf('Error populating %s object', '\\Game'), 0, $e);
+            throw new PropelException(sprintf('Error populating %s object', '\\SplitScore'), 0, $e);
         }
     }
 
@@ -609,13 +514,13 @@ abstract class Game implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getReadConnection(GameTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getReadConnection(SplitScoreTableMap::DATABASE_NAME);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $dataFetcher = ChildGameQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
+        $dataFetcher = ChildSplitScoreQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
         $row = $dataFetcher->fetch();
         $dataFetcher->close();
         if (!$row) {
@@ -635,8 +540,8 @@ abstract class Game implements ActiveRecordInterface
      * @param      ConnectionInterface $con
      * @return void
      * @throws PropelException
-     * @see Game::setDeleted()
-     * @see Game::isDeleted()
+     * @see SplitScore::setDeleted()
+     * @see SplitScore::isDeleted()
      */
     public function delete(ConnectionInterface $con = null)
     {
@@ -645,11 +550,11 @@ abstract class Game implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(GameTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(SplitScoreTableMap::DATABASE_NAME);
         }
 
         $con->transaction(function () use ($con) {
-            $deleteQuery = ChildGameQuery::create()
+            $deleteQuery = ChildSplitScoreQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
@@ -684,7 +589,7 @@ abstract class Game implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(GameTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(SplitScoreTableMap::DATABASE_NAME);
         }
 
         return $con->transaction(function () use ($con) {
@@ -703,7 +608,7 @@ abstract class Game implements ActiveRecordInterface
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                GameTableMap::addInstanceToPool($this);
+                SplitScoreTableMap::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
@@ -772,30 +677,24 @@ abstract class Game implements ActiveRecordInterface
         $modifiedColumns = array();
         $index = 0;
 
-        $this->modifiedColumns[GameTableMap::COL_ID] = true;
+        $this->modifiedColumns[SplitScoreTableMap::COL_ID] = true;
         if (null !== $this->id) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key (' . GameTableMap::COL_ID . ')');
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . SplitScoreTableMap::COL_ID . ')');
         }
 
-         // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(GameTableMap::COL_ID)) {
-            $modifiedColumns[':p' . $index++]  = 'id';
+        // check the columns in natural order for more readable SQL queries
+        if ($this->isColumnModified(SplitScoreTableMap::COL_ID)) {
+            $modifiedColumns[':p' . $index++] = 'id';
         }
-        if ($this->isColumnModified(GameTableMap::COL_GAMETYPE)) {
-            $modifiedColumns[':p' . $index++]  = 'gameType';
+        if ($this->isColumnModified(SplitScoreTableMap::COL_FINALSCORE)) {
+            $modifiedColumns[':p' . $index++] = 'finalScore';
         }
-        if ($this->isColumnModified(GameTableMap::COL_ROUNDS)) {
-            $modifiedColumns[':p' . $index++]  = 'rounds';
-        }
-        if ($this->isColumnModified(GameTableMap::COL_DATE)) {
-            $modifiedColumns[':p' . $index++]  = 'date';
-        }
-        if ($this->isColumnModified(GameTableMap::COL_PLAYERID)) {
-            $modifiedColumns[':p' . $index++]  = 'playerId';
+        if ($this->isColumnModified(SplitScoreTableMap::COL_PLAYERID)) {
+            $modifiedColumns[':p' . $index++] = 'playerId';
         }
 
         $sql = sprintf(
-            'INSERT INTO game (%s) VALUES (%s)',
+            'INSERT INTO splitScore (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -807,14 +706,8 @@ abstract class Game implements ActiveRecordInterface
                     case 'id':
                         $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
                         break;
-                    case 'gameType':
-                        $stmt->bindValue($identifier, $this->gametype, PDO::PARAM_STR);
-                        break;
-                    case 'rounds':
-                        $stmt->bindValue($identifier, $this->rounds, PDO::PARAM_INT);
-                        break;
-                    case 'date':
-                        $stmt->bindValue($identifier, $this->date ? $this->date->format("Y-m-d H:i:s.u") : null, PDO::PARAM_STR);
+                    case 'finalScore':
+                        $stmt->bindValue($identifier, $this->finalscore, PDO::PARAM_INT);
                         break;
                     case 'playerId':
                         $stmt->bindValue($identifier, $this->playerid, PDO::PARAM_INT);
@@ -865,7 +758,7 @@ abstract class Game implements ActiveRecordInterface
      */
     public function getByName($name, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = GameTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = SplitScoreTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -885,15 +778,9 @@ abstract class Game implements ActiveRecordInterface
                 return $this->getId();
                 break;
             case 1:
-                return $this->getGametype();
+                return $this->getFinalscore();
                 break;
             case 2:
-                return $this->getRounds();
-                break;
-            case 3:
-                return $this->getDate();
-                break;
-            case 4:
                 return $this->getPlayerid();
                 break;
             default:
@@ -908,7 +795,7 @@ abstract class Game implements ActiveRecordInterface
      * You can specify the key type of the array by passing one of the class
      * type constants.
      *
-     * @param     string  $keyType (optional) One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME,
+     * @param     string $keyType (optional) One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME,
      *                    TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *                    Defaults to TableMap::TYPE_PHPNAME.
      * @param     boolean $includeLazyLoadColumns (optional) Whether to include lazy loaded columns. Defaults to TRUE.
@@ -920,22 +807,16 @@ abstract class Game implements ActiveRecordInterface
     public function toArray($keyType = TableMap::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
 
-        if (isset($alreadyDumpedObjects['Game'][$this->hashCode()])) {
+        if (isset($alreadyDumpedObjects['SplitScore'][$this->hashCode()])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['Game'][$this->hashCode()] = true;
-        $keys = GameTableMap::getFieldNames($keyType);
+        $alreadyDumpedObjects['SplitScore'][$this->hashCode()] = true;
+        $keys = SplitScoreTableMap::getFieldNames($keyType);
         $result = array(
             $keys[0] => $this->getId(),
-            $keys[1] => $this->getGametype(),
-            $keys[2] => $this->getRounds(),
-            $keys[3] => $this->getDate(),
-            $keys[4] => $this->getPlayerid(),
+            $keys[1] => $this->getFinalscore(),
+            $keys[2] => $this->getPlayerid(),
         );
-        if ($result[$keys[3]] instanceof \DateTimeInterface) {
-            $result[$keys[3]] = $result[$keys[3]]->format('c');
-        }
-
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
             $result[$key] = $virtualColumn;
@@ -955,7 +836,7 @@ abstract class Game implements ActiveRecordInterface
                         $key = 'Player';
                 }
 
-                $result[$key] = $this->aPlayer->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
+                $result[$key] = $this->aPlayer->toArray($keyType, $includeLazyLoadColumns, $alreadyDumpedObjects, true);
             }
         }
 
@@ -966,16 +847,16 @@ abstract class Game implements ActiveRecordInterface
      * Sets a field from the object by name passed in as a string.
      *
      * @param  string $name
-     * @param  mixed  $value field value
+     * @param  mixed $value field value
      * @param  string $type The type of fieldname the $name is of:
      *                one of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *                Defaults to TableMap::TYPE_PHPNAME.
-     * @return $this|\Game
+     * @return $this|\SplitScore
      */
     public function setByName($name, $value, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = GameTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = SplitScoreTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
 
         return $this->setByPosition($pos, $value);
     }
@@ -986,7 +867,7 @@ abstract class Game implements ActiveRecordInterface
      *
      * @param  int $pos position in xml schema
      * @param  mixed $value field value
-     * @return $this|\Game
+     * @return $this|\SplitScore
      */
     public function setByPosition($pos, $value)
     {
@@ -995,15 +876,9 @@ abstract class Game implements ActiveRecordInterface
                 $this->setId($value);
                 break;
             case 1:
-                $this->setGametype($value);
+                $this->setFinalscore($value);
                 break;
             case 2:
-                $this->setRounds($value);
-                break;
-            case 3:
-                $this->setDate($value);
-                break;
-            case 4:
                 $this->setPlayerid($value);
                 break;
         } // switch()
@@ -1024,32 +899,26 @@ abstract class Game implements ActiveRecordInterface
      * TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      * The default key type is the column's TableMap::TYPE_PHPNAME.
      *
-     * @param      array  $arr     An array to populate the object from.
+     * @param      array $arr An array to populate the object from.
      * @param      string $keyType The type of keys the array uses.
      * @return void
      */
     public function fromArray($arr, $keyType = TableMap::TYPE_PHPNAME)
     {
-        $keys = GameTableMap::getFieldNames($keyType);
+        $keys = SplitScoreTableMap::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) {
             $this->setId($arr[$keys[0]]);
         }
         if (array_key_exists($keys[1], $arr)) {
-            $this->setGametype($arr[$keys[1]]);
+            $this->setFinalscore($arr[$keys[1]]);
         }
         if (array_key_exists($keys[2], $arr)) {
-            $this->setRounds($arr[$keys[2]]);
-        }
-        if (array_key_exists($keys[3], $arr)) {
-            $this->setDate($arr[$keys[3]]);
-        }
-        if (array_key_exists($keys[4], $arr)) {
-            $this->setPlayerid($arr[$keys[4]]);
+            $this->setPlayerid($arr[$keys[2]]);
         }
     }
 
-     /**
+    /**
      * Populate the current object from a string, using a given parser format
      * <code>
      * $book = new Book();
@@ -1066,7 +935,7 @@ abstract class Game implements ActiveRecordInterface
      * @param string $data The source data to import from
      * @param string $keyType The type of keys the array uses.
      *
-     * @return $this|\Game The current object, for fluid interface
+     * @return $this|\SplitScore The current object, for fluid interface
      */
     public function importFrom($parser, $data, $keyType = TableMap::TYPE_PHPNAME)
     {
@@ -1086,22 +955,16 @@ abstract class Game implements ActiveRecordInterface
      */
     public function buildCriteria()
     {
-        $criteria = new Criteria(GameTableMap::DATABASE_NAME);
+        $criteria = new Criteria(SplitScoreTableMap::DATABASE_NAME);
 
-        if ($this->isColumnModified(GameTableMap::COL_ID)) {
-            $criteria->add(GameTableMap::COL_ID, $this->id);
+        if ($this->isColumnModified(SplitScoreTableMap::COL_ID)) {
+            $criteria->add(SplitScoreTableMap::COL_ID, $this->id);
         }
-        if ($this->isColumnModified(GameTableMap::COL_GAMETYPE)) {
-            $criteria->add(GameTableMap::COL_GAMETYPE, $this->gametype);
+        if ($this->isColumnModified(SplitScoreTableMap::COL_FINALSCORE)) {
+            $criteria->add(SplitScoreTableMap::COL_FINALSCORE, $this->finalscore);
         }
-        if ($this->isColumnModified(GameTableMap::COL_ROUNDS)) {
-            $criteria->add(GameTableMap::COL_ROUNDS, $this->rounds);
-        }
-        if ($this->isColumnModified(GameTableMap::COL_DATE)) {
-            $criteria->add(GameTableMap::COL_DATE, $this->date);
-        }
-        if ($this->isColumnModified(GameTableMap::COL_PLAYERID)) {
-            $criteria->add(GameTableMap::COL_PLAYERID, $this->playerid);
+        if ($this->isColumnModified(SplitScoreTableMap::COL_PLAYERID)) {
+            $criteria->add(SplitScoreTableMap::COL_PLAYERID, $this->playerid);
         }
 
         return $criteria;
@@ -1119,8 +982,8 @@ abstract class Game implements ActiveRecordInterface
      */
     public function buildPkeyCriteria()
     {
-        $criteria = ChildGameQuery::create();
-        $criteria->add(GameTableMap::COL_ID, $this->id);
+        $criteria = ChildSplitScoreQuery::create();
+        $criteria->add(SplitScoreTableMap::COL_ID, $this->id);
 
         return $criteria;
     }
@@ -1182,16 +1045,14 @@ abstract class Game implements ActiveRecordInterface
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param      object $copyObj An object of \Game (or compatible) type.
+     * @param      object $copyObj An object of \SplitScore (or compatible) type.
      * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param      boolean $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws PropelException
      */
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
-        $copyObj->setGametype($this->getGametype());
-        $copyObj->setRounds($this->getRounds());
-        $copyObj->setDate($this->getDate());
+        $copyObj->setFinalscore($this->getFinalscore());
         $copyObj->setPlayerid($this->getPlayerid());
         if ($makeNew) {
             $copyObj->setNew(true);
@@ -1208,7 +1069,7 @@ abstract class Game implements ActiveRecordInterface
      * objects.
      *
      * @param  boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return \Game Clone of current object.
+     * @return \SplitScore Clone of current object.
      * @throws PropelException
      */
     public function copy($deepCopy = false)
@@ -1225,7 +1086,7 @@ abstract class Game implements ActiveRecordInterface
      * Declares an association between this object and a ChildPlayer object.
      *
      * @param  ChildPlayer $v
-     * @return $this|\Game The current object (for fluent API support)
+     * @return $this|\SplitScore The current object (for fluent API support)
      * @throws PropelException
      */
     public function setPlayer(ChildPlayer $v = null)
@@ -1241,7 +1102,7 @@ abstract class Game implements ActiveRecordInterface
         // Add binding for other direction of this n:n relationship.
         // If this object has already been added to the ChildPlayer object, it will not be re-added.
         if ($v !== null) {
-            $v->addGame($this);
+            $v->addSplitScore($this);
         }
 
 
@@ -1265,7 +1126,7 @@ abstract class Game implements ActiveRecordInterface
                 to this object.  This level of coupling may, however, be
                 undesirable since it could result in an only partially populated collection
                 in the referenced object.
-                $this->aPlayer->addGames($this);
+                $this->aPlayer->addSplitScores($this);
              */
         }
 
@@ -1280,12 +1141,10 @@ abstract class Game implements ActiveRecordInterface
     public function clear()
     {
         if (null !== $this->aPlayer) {
-            $this->aPlayer->removeGame($this);
+            $this->aPlayer->removeSplitScore($this);
         }
         $this->id = null;
-        $this->gametype = null;
-        $this->rounds = null;
-        $this->date = null;
+        $this->finalscore = null;
         $this->playerid = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
@@ -1317,7 +1176,7 @@ abstract class Game implements ActiveRecordInterface
      */
     public function __toString()
     {
-        return (string) $this->exportTo(GameTableMap::DEFAULT_STRING_FORMAT);
+        return (string)$this->exportTo(SplitScoreTableMap::DEFAULT_STRING_FORMAT);
     }
 
     /**
@@ -1424,7 +1283,7 @@ abstract class Game implements ActiveRecordInterface
      * Allows to define default __call() behavior if you overwrite __call()
      *
      * @param string $name
-     * @param mixed  $params
+     * @param mixed $params
      *
      * @return array|string
      */

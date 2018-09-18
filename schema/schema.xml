@@ -22,7 +22,7 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:noNamespaceSchemaLocation="http://xsd.propelorm.org/1.6/database.xsd"
           namespace=""
-        >
+>
     <table name="player" phpName="Player">
         <column name="id" type="integer" required="true" autoIncrement="true" primaryKey="true"/>
         <column name="name" type="varchar" required="true" unique="true"/>
@@ -50,6 +50,15 @@
             <reference local="playerId" foreign="id"/>
         </foreign-key>
 
+    </table>
+
+    <table name="splitScore" phpName="SplitScore">
+        <column name="id" type="integer" required="true" autoIncrement="true" primaryKey="true"/>
+        <column name="finalScore" type="integer" required="true"/>
+        <column name="playerId" type="integer" required="true"/>
+        <foreign-key foreignTable="player">
+            <reference local="playerId" foreign="id"/>
+        </foreign-key>
     </table>
 
     <!--

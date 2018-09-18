@@ -16,6 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class NewPlayerController extends AbstractController
 {
     private $logger;
+    private $playerName;
+    private $isLoggedIn = false;
 
     public function __construct(LoggerInterface $logger)
     {
@@ -23,7 +25,7 @@ class NewPlayerController extends AbstractController
     }
 
     /**
-     * @Route("dart/player/new", name="new_player")
+     * @Route("dart/player", name="new_player")
      */
     public function new(Request $request)
     {
@@ -45,22 +47,19 @@ class NewPlayerController extends AbstractController
             foreach ($response->headers->getCookies() as $cookie) {
                 $this->logger->debug("Cookie: " . $cookie->getName() . ":" . $cookie->getValue());
             }
-            $response->send();
-            $this->addFlash('success',"Player logged in!");
-          //  return $this->redirectToRoute('dart170_form');
+            // $response->send();
+            $this->addFlash('success', "Player logged in! Choose a game!");
+            //  return $this->redirectToRoute('dart170_form');
 
         }
+        $response = $this->render('new_player/index.html.twig', array('form' => $form->createView()));
+        $response->headers->setCookie(new Cookie('player', $this->playerName));
 
         return $response;
     }
 
-    /**
-     * @param $form
-     * @param $response
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    private
-    function handleForm($form, $response)
+
+    private function handleForm($form, $response)
     {
         $player = $form->getData();
         if ($player->getName() === '' || $player->getPassword() == '' || $player->getName() === null) {
@@ -83,8 +82,13 @@ class NewPlayerController extends AbstractController
             } catch (PropelException $e) {
             }
         } else {
-            $response->headers->setCookie(new Cookie('player', $dbPlayer->getName()));
-            $this->addFlash('error', "Player already exists. Logged in.");
+            $extracted = $playerQuery->findByName($dbPlayer->getName())->getFirst();
+            if ($extracted->getPassword() != $dbPlayer->getPassword()) {
+                $this->addFlash('error', "Wrong password.");
+                return false;
+            }
+            $this->isLoggedIn = true;
+            $this->playerName = $dbPlayer->getName();
             return true;
         }
         return false;
