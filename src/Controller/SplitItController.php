@@ -6,6 +6,7 @@ use App\Forms\SplitItForm;
 use App\model\SplitIt;
 use App\Utility\Authorizer;
 use App\Utility\SplitItCircle;
+use DateTime;
 use Propel\Runtime\Exception\PropelException;
 use Psr\Log\LoggerInterface;
 use SplitScore;
@@ -108,6 +109,9 @@ class SplitItController extends AbstractController
             } catch (PropelException $e) {
             }
             $splitScore->setFinalscore($this->currentGame->getCurrentScore());
+            $dateTime = new DateTime();
+            $dateTime->format('Y-m-d H:i:s');
+            $splitScore->setDate($dateTime);
             $this->logger->debug("Saving game:" . $splitScore);
             try {
                 $splitScore->save();

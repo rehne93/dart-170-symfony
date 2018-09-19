@@ -23,10 +23,12 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildSplitScoreQuery orderById($order = Criteria::ASC) Order by the id column
  * @method     ChildSplitScoreQuery orderByFinalscore($order = Criteria::ASC) Order by the finalScore column
  * @method     ChildSplitScoreQuery orderByPlayerid($order = Criteria::ASC) Order by the playerId column
+ * @method     ChildSplitScoreQuery orderByDate($order = Criteria::ASC) Order by the date column
  *
  * @method     ChildSplitScoreQuery groupById() Group by the id column
  * @method     ChildSplitScoreQuery groupByFinalscore() Group by the finalScore column
  * @method     ChildSplitScoreQuery groupByPlayerid() Group by the playerId column
+ * @method     ChildSplitScoreQuery groupByDate() Group by the date column
  *
  * @method     ChildSplitScoreQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method     ChildSplitScoreQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
@@ -53,18 +55,21 @@ use Propel\Runtime\Exception\PropelException;
  *
  * @method     ChildSplitScore findOneById(int $id) Return the first ChildSplitScore filtered by the id column
  * @method     ChildSplitScore findOneByFinalscore(int $finalScore) Return the first ChildSplitScore filtered by the finalScore column
- * @method     ChildSplitScore findOneByPlayerid(int $playerId) Return the first ChildSplitScore filtered by the playerId column *
+ * @method     ChildSplitScore findOneByPlayerid(int $playerId) Return the first ChildSplitScore filtered by the playerId column
+ * @method     ChildSplitScore findOneByDate(string $date) Return the first ChildSplitScore filtered by the date column *
  * @method     ChildSplitScore requirePk($key, ConnectionInterface $con = null) Return the ChildSplitScore by primary key and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildSplitScore requireOne(ConnectionInterface $con = null) Return the first ChildSplitScore matching the query and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  *
  * @method     ChildSplitScore requireOneById(int $id) Return the first ChildSplitScore filtered by the id column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildSplitScore requireOneByFinalscore(int $finalScore) Return the first ChildSplitScore filtered by the finalScore column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildSplitScore requireOneByPlayerid(int $playerId) Return the first ChildSplitScore filtered by the playerId column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
+ * @method     ChildSplitScore requireOneByDate(string $date) Return the first ChildSplitScore filtered by the date column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  *
  * @method     ChildSplitScore[]|ObjectCollection find(ConnectionInterface $con = null) Return ChildSplitScore objects based on current ModelCriteria
  * @method     ChildSplitScore[]|ObjectCollection findById(int $id) Return ChildSplitScore objects filtered by the id column
  * @method     ChildSplitScore[]|ObjectCollection findByFinalscore(int $finalScore) Return ChildSplitScore objects filtered by the finalScore column
  * @method     ChildSplitScore[]|ObjectCollection findByPlayerid(int $playerId) Return ChildSplitScore objects filtered by the playerId column
+ * @method     ChildSplitScore[]|ObjectCollection findByDate(string $date) Return ChildSplitScore objects filtered by the date column
  * @method     ChildSplitScore[]|\Propel\Runtime\Util\PropelModelPager paginate($page = 1, $maxPerPage = 10, ConnectionInterface $con = null) Issue a SELECT query based on the current ModelCriteria and uses a page and a maximum number of results per page to compute an offset and a limit
  *
  */
@@ -163,7 +168,7 @@ abstract class SplitScoreQuery extends ModelCriteria
      */
     protected function findPkSimple($key, ConnectionInterface $con)
     {
-        $sql = 'SELECT id, finalScore, playerId FROM splitScore WHERE id = :p0';
+        $sql = 'SELECT id, finalScore, playerId, date FROM splitScore WHERE id = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -376,6 +381,49 @@ abstract class SplitScoreQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(SplitScoreTableMap::COL_PLAYERID, $playerid, $comparison);
+    }
+
+    /**
+     * Filter the query on the date column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByDate('2011-03-14'); // WHERE date = '2011-03-14'
+     * $query->filterByDate('now'); // WHERE date = '2011-03-14'
+     * $query->filterByDate(array('max' => 'yesterday')); // WHERE date > '2011-03-13'
+     * </code>
+     *
+     * @param     mixed $date The value to use as filter.
+     *              Values can be integers (unix timestamps), DateTime objects, or strings.
+     *              Empty strings are treated as NULL.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return $this|ChildSplitScoreQuery The current query, for fluid interface
+     */
+    public function filterByDate($date = null, $comparison = null)
+    {
+        if (is_array($date)) {
+            $useMinMax = false;
+            if (isset($date['min'])) {
+                $this->addUsingAlias(SplitScoreTableMap::COL_DATE, $date['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($date['max'])) {
+                $this->addUsingAlias(SplitScoreTableMap::COL_DATE, $date['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(SplitScoreTableMap::COL_DATE, $date, $comparison);
     }
 
     /**

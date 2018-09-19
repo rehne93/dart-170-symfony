@@ -59,7 +59,7 @@ class AroundTheClockTableMap extends TableMap
     /**
      * The total number of columns
      */
-    const NUM_COLUMNS = 4;
+    const NUM_COLUMNS = 5;
 
     /**
      * The number of lazy-loaded columns
@@ -69,7 +69,7 @@ class AroundTheClockTableMap extends TableMap
     /**
      * The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS)
      */
-    const NUM_HYDRATE_COLUMNS = 4;
+    const NUM_HYDRATE_COLUMNS = 5;
 
     /**
      * the column name for the id field
@@ -92,6 +92,11 @@ class AroundTheClockTableMap extends TableMap
     const COL_PLAYERID = 'aroundTheClock.playerId';
 
     /**
+     * the column name for the date field
+     */
+    const COL_DATE = 'aroundTheClock.date';
+
+    /**
      * The default string format for model objects of the related table
      */
     const DEFAULT_STRING_FORMAT = 'YAML';
@@ -103,11 +108,11 @@ class AroundTheClockTableMap extends TableMap
      * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        self::TYPE_PHPNAME       => array('Id', 'Bullincluded', 'Dartsneeded', 'Playerid', ),
-        self::TYPE_CAMELNAME     => array('id', 'bullincluded', 'dartsneeded', 'playerid', ),
-        self::TYPE_COLNAME       => array(AroundTheClockTableMap::COL_ID, AroundTheClockTableMap::COL_BULLINCLUDED, AroundTheClockTableMap::COL_DARTSNEEDED, AroundTheClockTableMap::COL_PLAYERID, ),
-        self::TYPE_FIELDNAME     => array('id', 'bullIncluded', 'dartsNeeded', 'playerId', ),
-        self::TYPE_NUM           => array(0, 1, 2, 3, )
+        self::TYPE_PHPNAME => array('Id', 'Bullincluded', 'Dartsneeded', 'Playerid', 'Date',),
+        self::TYPE_CAMELNAME => array('id', 'bullincluded', 'dartsneeded', 'playerid', 'date',),
+        self::TYPE_COLNAME => array(AroundTheClockTableMap::COL_ID, AroundTheClockTableMap::COL_BULLINCLUDED, AroundTheClockTableMap::COL_DARTSNEEDED, AroundTheClockTableMap::COL_PLAYERID, AroundTheClockTableMap::COL_DATE,),
+        self::TYPE_FIELDNAME => array('id', 'bullIncluded', 'dartsNeeded', 'playerId', 'date',),
+        self::TYPE_NUM => array(0, 1, 2, 3, 4,)
     );
 
     /**
@@ -117,11 +122,11 @@ class AroundTheClockTableMap extends TableMap
      * e.g. self::$fieldKeys[self::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        self::TYPE_PHPNAME       => array('Id' => 0, 'Bullincluded' => 1, 'Dartsneeded' => 2, 'Playerid' => 3, ),
-        self::TYPE_CAMELNAME     => array('id' => 0, 'bullincluded' => 1, 'dartsneeded' => 2, 'playerid' => 3, ),
-        self::TYPE_COLNAME       => array(AroundTheClockTableMap::COL_ID => 0, AroundTheClockTableMap::COL_BULLINCLUDED => 1, AroundTheClockTableMap::COL_DARTSNEEDED => 2, AroundTheClockTableMap::COL_PLAYERID => 3, ),
-        self::TYPE_FIELDNAME     => array('id' => 0, 'bullIncluded' => 1, 'dartsNeeded' => 2, 'playerId' => 3, ),
-        self::TYPE_NUM           => array(0, 1, 2, 3, )
+        self::TYPE_PHPNAME => array('Id' => 0, 'Bullincluded' => 1, 'Dartsneeded' => 2, 'Playerid' => 3, 'Date' => 4,),
+        self::TYPE_CAMELNAME => array('id' => 0, 'bullincluded' => 1, 'dartsneeded' => 2, 'playerid' => 3, 'date' => 4,),
+        self::TYPE_COLNAME => array(AroundTheClockTableMap::COL_ID => 0, AroundTheClockTableMap::COL_BULLINCLUDED => 1, AroundTheClockTableMap::COL_DARTSNEEDED => 2, AroundTheClockTableMap::COL_PLAYERID => 3, AroundTheClockTableMap::COL_DATE => 4,),
+        self::TYPE_FIELDNAME => array('id' => 0, 'bullIncluded' => 1, 'dartsNeeded' => 2, 'playerId' => 3, 'date' => 4,),
+        self::TYPE_NUM => array(0, 1, 2, 3, 4,)
     );
 
     /**
@@ -145,6 +150,7 @@ class AroundTheClockTableMap extends TableMap
         $this->addColumn('bullIncluded', 'Bullincluded', 'BOOLEAN', true, 1, null);
         $this->addColumn('dartsNeeded', 'Dartsneeded', 'INTEGER', true, null, null);
         $this->addForeignKey('playerId', 'Playerid', 'INTEGER', 'player', 'id', true, null, null);
+        $this->addColumn('date', 'Date', 'TIMESTAMP', true, null, null);
     } // initialize()
 
     /**
@@ -306,11 +312,13 @@ class AroundTheClockTableMap extends TableMap
             $criteria->addSelectColumn(AroundTheClockTableMap::COL_BULLINCLUDED);
             $criteria->addSelectColumn(AroundTheClockTableMap::COL_DARTSNEEDED);
             $criteria->addSelectColumn(AroundTheClockTableMap::COL_PLAYERID);
+            $criteria->addSelectColumn(AroundTheClockTableMap::COL_DATE);
         } else {
             $criteria->addSelectColumn($alias . '.id');
             $criteria->addSelectColumn($alias . '.bullIncluded');
             $criteria->addSelectColumn($alias . '.dartsNeeded');
             $criteria->addSelectColumn($alias . '.playerId');
+            $criteria->addSelectColumn($alias . '.date');
         }
     }
 

@@ -59,7 +59,7 @@ class SplitScoreTableMap extends TableMap
     /**
      * The total number of columns
      */
-    const NUM_COLUMNS = 3;
+    const NUM_COLUMNS = 4;
 
     /**
      * The number of lazy-loaded columns
@@ -69,7 +69,7 @@ class SplitScoreTableMap extends TableMap
     /**
      * The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS)
      */
-    const NUM_HYDRATE_COLUMNS = 3;
+    const NUM_HYDRATE_COLUMNS = 4;
 
     /**
      * the column name for the id field
@@ -87,6 +87,11 @@ class SplitScoreTableMap extends TableMap
     const COL_PLAYERID = 'splitScore.playerId';
 
     /**
+     * the column name for the date field
+     */
+    const COL_DATE = 'splitScore.date';
+
+    /**
      * The default string format for model objects of the related table
      */
     const DEFAULT_STRING_FORMAT = 'YAML';
@@ -98,11 +103,11 @@ class SplitScoreTableMap extends TableMap
      * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array(
-        self::TYPE_PHPNAME => array('Id', 'Finalscore', 'Playerid',),
-        self::TYPE_CAMELNAME => array('id', 'finalscore', 'playerid',),
-        self::TYPE_COLNAME => array(SplitScoreTableMap::COL_ID, SplitScoreTableMap::COL_FINALSCORE, SplitScoreTableMap::COL_PLAYERID,),
-        self::TYPE_FIELDNAME => array('id', 'finalScore', 'playerId',),
-        self::TYPE_NUM => array(0, 1, 2,)
+        self::TYPE_PHPNAME => array('Id', 'Finalscore', 'Playerid', 'Date',),
+        self::TYPE_CAMELNAME => array('id', 'finalscore', 'playerid', 'date',),
+        self::TYPE_COLNAME => array(SplitScoreTableMap::COL_ID, SplitScoreTableMap::COL_FINALSCORE, SplitScoreTableMap::COL_PLAYERID, SplitScoreTableMap::COL_DATE,),
+        self::TYPE_FIELDNAME => array('id', 'finalScore', 'playerId', 'date',),
+        self::TYPE_NUM => array(0, 1, 2, 3,)
     );
 
     /**
@@ -112,11 +117,11 @@ class SplitScoreTableMap extends TableMap
      * e.g. self::$fieldKeys[self::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array(
-        self::TYPE_PHPNAME => array('Id' => 0, 'Finalscore' => 1, 'Playerid' => 2,),
-        self::TYPE_CAMELNAME => array('id' => 0, 'finalscore' => 1, 'playerid' => 2,),
-        self::TYPE_COLNAME => array(SplitScoreTableMap::COL_ID => 0, SplitScoreTableMap::COL_FINALSCORE => 1, SplitScoreTableMap::COL_PLAYERID => 2,),
-        self::TYPE_FIELDNAME => array('id' => 0, 'finalScore' => 1, 'playerId' => 2,),
-        self::TYPE_NUM => array(0, 1, 2,)
+        self::TYPE_PHPNAME => array('Id' => 0, 'Finalscore' => 1, 'Playerid' => 2, 'Date' => 3,),
+        self::TYPE_CAMELNAME => array('id' => 0, 'finalscore' => 1, 'playerid' => 2, 'date' => 3,),
+        self::TYPE_COLNAME => array(SplitScoreTableMap::COL_ID => 0, SplitScoreTableMap::COL_FINALSCORE => 1, SplitScoreTableMap::COL_PLAYERID => 2, SplitScoreTableMap::COL_DATE => 3,),
+        self::TYPE_FIELDNAME => array('id' => 0, 'finalScore' => 1, 'playerId' => 2, 'date' => 3,),
+        self::TYPE_NUM => array(0, 1, 2, 3,)
     );
 
     /**
@@ -139,6 +144,7 @@ class SplitScoreTableMap extends TableMap
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
         $this->addColumn('finalScore', 'Finalscore', 'INTEGER', true, null, null);
         $this->addForeignKey('playerId', 'Playerid', 'INTEGER', 'player', 'id', true, null, null);
+        $this->addColumn('date', 'Date', 'TIMESTAMP', true, null, null);
     } // initialize()
 
     /**
@@ -279,7 +285,6 @@ class SplitScoreTableMap extends TableMap
 
         return $results;
     }
-
     /**
      * Add all the columns needed to create a new object.
      *
@@ -298,10 +303,12 @@ class SplitScoreTableMap extends TableMap
             $criteria->addSelectColumn(SplitScoreTableMap::COL_ID);
             $criteria->addSelectColumn(SplitScoreTableMap::COL_FINALSCORE);
             $criteria->addSelectColumn(SplitScoreTableMap::COL_PLAYERID);
+            $criteria->addSelectColumn(SplitScoreTableMap::COL_DATE);
         } else {
             $criteria->addSelectColumn($alias . '.id');
             $criteria->addSelectColumn($alias . '.finalScore');
             $criteria->addSelectColumn($alias . '.playerId');
+            $criteria->addSelectColumn($alias . '.date');
         }
     }
 

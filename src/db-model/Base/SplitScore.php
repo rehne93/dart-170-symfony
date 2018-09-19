@@ -5,6 +5,7 @@ namespace Base;
 use \Player as ChildPlayer;
 use \PlayerQuery as ChildPlayerQuery;
 use \SplitScoreQuery as ChildSplitScoreQuery;
+use \DateTime;
 use \Exception;
 use \PDO;
 use Map\SplitScoreTableMap;
@@ -19,6 +20,7 @@ use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Parser\AbstractParser;
+use Propel\Runtime\Util\PropelDateTime;
 
 /**
  * Base class that represents a row from the 'splitScore' table.
@@ -81,6 +83,13 @@ abstract class SplitScore implements ActiveRecordInterface
      * @var        int
      */
     protected $playerid;
+
+    /**
+     * The value for the date field.
+     *
+     * @var        DateTime
+     */
+    protected $date;
 
     /**
      * @var        ChildPlayer
@@ -351,6 +360,26 @@ abstract class SplitScore implements ActiveRecordInterface
     }
 
     /**
+     * Get the [optionally formatted] temporal [date] column value.
+     *
+     *
+     * @param      string|null $format The date/time format string (either date()-style or strftime()-style).
+     *                            If format is NULL, then the raw DateTime object will be returned.
+     *
+     * @return string|DateTime Formatted date/time value as string or DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
+     *
+     * @throws PropelException - if unable to parse/validate the date/time value.
+     */
+    public function getDate($format = NULL)
+    {
+        if ($format === null) {
+            return $this->date;
+        } else {
+            return $this->date instanceof \DateTimeInterface ? $this->date->format($format) : null;
+        }
+    }
+
+    /**
      * Set the value of [id] column.
      *
      * @param int $v new value
@@ -415,6 +444,26 @@ abstract class SplitScore implements ActiveRecordInterface
     } // setPlayerid()
 
     /**
+     * Sets the value of [date] column to a normalized version of the date/time value specified.
+     *
+     * @param  mixed $v string, integer (timestamp), or \DateTimeInterface value.
+     *               Empty strings are treated as NULL.
+     * @return $this|\SplitScore The current object (for fluent API support)
+     */
+    public function setDate($v)
+    {
+        $dt = PropelDateTime::newInstance($v, null, 'DateTime');
+        if ($this->date !== null || $dt !== null) {
+            if ($this->date === null || $dt === null || $dt->format("Y-m-d H:i:s.u") !== $this->date->format("Y-m-d H:i:s.u")) {
+                $this->date = $dt === null ? null : clone $dt;
+                $this->modifiedColumns[SplitScoreTableMap::COL_DATE] = true;
+            }
+        } // if either are not null
+
+        return $this;
+    } // setDate()
+
+    /**
      * Indicates whether the columns in this object are only set to default values.
      *
      * This method can be used in conjunction with isModified() to indicate whether an object is both
@@ -458,6 +507,12 @@ abstract class SplitScore implements ActiveRecordInterface
 
             $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : SplitScoreTableMap::translateFieldName('Playerid', TableMap::TYPE_PHPNAME, $indexType)];
             $this->playerid = (null !== $col) ? (int)$col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : SplitScoreTableMap::translateFieldName('Date', TableMap::TYPE_PHPNAME, $indexType)];
+            if ($col === '0000-00-00 00:00:00') {
+                $col = null;
+            }
+            $this->date = (null !== $col) ? PropelDateTime::newInstance($col, null, 'DateTime') : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -466,7 +521,7 @@ abstract class SplitScore implements ActiveRecordInterface
                 $this->ensureConsistency();
             }
 
-            return $startcol + 3; // 3 = SplitScoreTableMap::NUM_HYDRATE_COLUMNS.
+            return $startcol + 4; // 4 = SplitScoreTableMap::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException(sprintf('Error populating %s object', '\\SplitScore'), 0, $e);
@@ -692,6 +747,9 @@ abstract class SplitScore implements ActiveRecordInterface
         if ($this->isColumnModified(SplitScoreTableMap::COL_PLAYERID)) {
             $modifiedColumns[':p' . $index++] = 'playerId';
         }
+        if ($this->isColumnModified(SplitScoreTableMap::COL_DATE)) {
+            $modifiedColumns[':p' . $index++] = 'date';
+        }
 
         $sql = sprintf(
             'INSERT INTO splitScore (%s) VALUES (%s)',
@@ -711,6 +769,9 @@ abstract class SplitScore implements ActiveRecordInterface
                         break;
                     case 'playerId':
                         $stmt->bindValue($identifier, $this->playerid, PDO::PARAM_INT);
+                        break;
+                    case 'date':
+                        $stmt->bindValue($identifier, $this->date ? $this->date->format("Y-m-d H:i:s.u") : null, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -783,6 +844,9 @@ abstract class SplitScore implements ActiveRecordInterface
             case 2:
                 return $this->getPlayerid();
                 break;
+            case 3:
+                return $this->getDate();
+                break;
             default:
                 return null;
                 break;
@@ -816,7 +880,12 @@ abstract class SplitScore implements ActiveRecordInterface
             $keys[0] => $this->getId(),
             $keys[1] => $this->getFinalscore(),
             $keys[2] => $this->getPlayerid(),
+            $keys[3] => $this->getDate(),
         );
+        if ($result[$keys[3]] instanceof \DateTimeInterface) {
+            $result[$keys[3]] = $result[$keys[3]]->format('c');
+        }
+
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
             $result[$key] = $virtualColumn;
@@ -881,6 +950,9 @@ abstract class SplitScore implements ActiveRecordInterface
             case 2:
                 $this->setPlayerid($value);
                 break;
+            case 3:
+                $this->setDate($value);
+                break;
         } // switch()
 
         return $this;
@@ -915,6 +987,9 @@ abstract class SplitScore implements ActiveRecordInterface
         }
         if (array_key_exists($keys[2], $arr)) {
             $this->setPlayerid($arr[$keys[2]]);
+        }
+        if (array_key_exists($keys[3], $arr)) {
+            $this->setDate($arr[$keys[3]]);
         }
     }
 
@@ -965,6 +1040,9 @@ abstract class SplitScore implements ActiveRecordInterface
         }
         if ($this->isColumnModified(SplitScoreTableMap::COL_PLAYERID)) {
             $criteria->add(SplitScoreTableMap::COL_PLAYERID, $this->playerid);
+        }
+        if ($this->isColumnModified(SplitScoreTableMap::COL_DATE)) {
+            $criteria->add(SplitScoreTableMap::COL_DATE, $this->date);
         }
 
         return $criteria;
@@ -1054,6 +1132,7 @@ abstract class SplitScore implements ActiveRecordInterface
     {
         $copyObj->setFinalscore($this->getFinalscore());
         $copyObj->setPlayerid($this->getPlayerid());
+        $copyObj->setDate($this->getDate());
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -1146,6 +1225,7 @@ abstract class SplitScore implements ActiveRecordInterface
         $this->id = null;
         $this->finalscore = null;
         $this->playerid = null;
+        $this->date = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
         $this->resetModified();

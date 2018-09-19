@@ -52,6 +52,11 @@ class AroundTheClockController extends AbstractController
     }
 
 
+    /**
+     * @param $form
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
     private function handleForm($form)
     {
         $aroundTheWorld = $form->getData();
@@ -62,6 +67,9 @@ class AroundTheClockController extends AbstractController
         $dbData = new \AroundTheClock();
         $dbData->setBullincluded($aroundTheWorld->getBullincluded());
         $dbData->setDartsneeded($aroundTheWorld->getNumDarts());
+        $dateTime = new \DateTime();
+        $dateTime->format('Y-m-d H:i:s');
+        $dbData->setDate($dateTime);
 
         // TODO Put this in utility method or somewhere else, don't care
         $playerQuery = new PlayerQuery();

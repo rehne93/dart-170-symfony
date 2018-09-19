@@ -24,11 +24,13 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildAroundTheClockQuery orderByBullincluded($order = Criteria::ASC) Order by the bullIncluded column
  * @method     ChildAroundTheClockQuery orderByDartsneeded($order = Criteria::ASC) Order by the dartsNeeded column
  * @method     ChildAroundTheClockQuery orderByPlayerid($order = Criteria::ASC) Order by the playerId column
+ * @method     ChildAroundTheClockQuery orderByDate($order = Criteria::ASC) Order by the date column
  *
  * @method     ChildAroundTheClockQuery groupById() Group by the id column
  * @method     ChildAroundTheClockQuery groupByBullincluded() Group by the bullIncluded column
  * @method     ChildAroundTheClockQuery groupByDartsneeded() Group by the dartsNeeded column
  * @method     ChildAroundTheClockQuery groupByPlayerid() Group by the playerId column
+ * @method     ChildAroundTheClockQuery groupByDate() Group by the date column
  *
  * @method     ChildAroundTheClockQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method     ChildAroundTheClockQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
@@ -56,8 +58,8 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildAroundTheClock findOneById(int $id) Return the first ChildAroundTheClock filtered by the id column
  * @method     ChildAroundTheClock findOneByBullincluded(boolean $bullIncluded) Return the first ChildAroundTheClock filtered by the bullIncluded column
  * @method     ChildAroundTheClock findOneByDartsneeded(int $dartsNeeded) Return the first ChildAroundTheClock filtered by the dartsNeeded column
- * @method     ChildAroundTheClock findOneByPlayerid(int $playerId) Return the first ChildAroundTheClock filtered by the playerId column *
-
+ * @method     ChildAroundTheClock findOneByPlayerid(int $playerId) Return the first ChildAroundTheClock filtered by the playerId column
+ * @method     ChildAroundTheClock findOneByDate(string $date) Return the first ChildAroundTheClock filtered by the date column *
  * @method     ChildAroundTheClock requirePk($key, ConnectionInterface $con = null) Return the ChildAroundTheClock by primary key and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildAroundTheClock requireOne(ConnectionInterface $con = null) Return the first ChildAroundTheClock matching the query and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  *
@@ -65,12 +67,14 @@ use Propel\Runtime\Exception\PropelException;
  * @method     ChildAroundTheClock requireOneByBullincluded(boolean $bullIncluded) Return the first ChildAroundTheClock filtered by the bullIncluded column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildAroundTheClock requireOneByDartsneeded(int $dartsNeeded) Return the first ChildAroundTheClock filtered by the dartsNeeded column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  * @method     ChildAroundTheClock requireOneByPlayerid(int $playerId) Return the first ChildAroundTheClock filtered by the playerId column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
+ * @method     ChildAroundTheClock requireOneByDate(string $date) Return the first ChildAroundTheClock filtered by the date column and throws \Propel\Runtime\Exception\EntityNotFoundException when not found
  *
  * @method     ChildAroundTheClock[]|ObjectCollection find(ConnectionInterface $con = null) Return ChildAroundTheClock objects based on current ModelCriteria
  * @method     ChildAroundTheClock[]|ObjectCollection findById(int $id) Return ChildAroundTheClock objects filtered by the id column
  * @method     ChildAroundTheClock[]|ObjectCollection findByBullincluded(boolean $bullIncluded) Return ChildAroundTheClock objects filtered by the bullIncluded column
  * @method     ChildAroundTheClock[]|ObjectCollection findByDartsneeded(int $dartsNeeded) Return ChildAroundTheClock objects filtered by the dartsNeeded column
  * @method     ChildAroundTheClock[]|ObjectCollection findByPlayerid(int $playerId) Return ChildAroundTheClock objects filtered by the playerId column
+ * @method     ChildAroundTheClock[]|ObjectCollection findByDate(string $date) Return ChildAroundTheClock objects filtered by the date column
  * @method     ChildAroundTheClock[]|\Propel\Runtime\Util\PropelModelPager paginate($page = 1, $maxPerPage = 10, ConnectionInterface $con = null) Issue a SELECT query based on the current ModelCriteria and uses a page and a maximum number of results per page to compute an offset and a limit
  *
  */
@@ -169,7 +173,7 @@ abstract class AroundTheClockQuery extends ModelCriteria
      */
     protected function findPkSimple($key, ConnectionInterface $con)
     {
-        $sql = 'SELECT id, bullIncluded, dartsNeeded, playerId FROM aroundTheClock WHERE id = :p0';
+        $sql = 'SELECT id, bullIncluded, dartsNeeded, playerId, date FROM aroundTheClock WHERE id = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -409,6 +413,49 @@ abstract class AroundTheClockQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(AroundTheClockTableMap::COL_PLAYERID, $playerid, $comparison);
+    }
+
+    /**
+     * Filter the query on the date column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByDate('2011-03-14'); // WHERE date = '2011-03-14'
+     * $query->filterByDate('now'); // WHERE date = '2011-03-14'
+     * $query->filterByDate(array('max' => 'yesterday')); // WHERE date > '2011-03-13'
+     * </code>
+     *
+     * @param     mixed $date The value to use as filter.
+     *              Values can be integers (unix timestamps), DateTime objects, or strings.
+     *              Empty strings are treated as NULL.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return $this|ChildAroundTheClockQuery The current query, for fluid interface
+     */
+    public function filterByDate($date = null, $comparison = null)
+    {
+        if (is_array($date)) {
+            $useMinMax = false;
+            if (isset($date['min'])) {
+                $this->addUsingAlias(AroundTheClockTableMap::COL_DATE, $date['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($date['max'])) {
+                $this->addUsingAlias(AroundTheClockTableMap::COL_DATE, $date['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(AroundTheClockTableMap::COL_DATE, $date, $comparison);
     }
 
     /**
