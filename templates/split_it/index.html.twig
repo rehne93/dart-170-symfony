@@ -4,8 +4,9 @@
     {% block stylesheets %}
         <link href="../css/base.css" rel="stylesheet"/>
     {% endblock %}
+
 </head>
-<body>
+<body onload="clearOnLoad()">
 <div class="baseStyle">
     Hello {{ name }}! <br> You're successfully logged in! <br> <br>
 </div>
@@ -15,11 +16,11 @@
 <div class="form">
     {{ form_start(form,{'attr':{'id':'form_splitIt'}}) }}
     <div class="baseStyle">
-        {{ form_row(form.score) }}
+        {{ form_row(form.score, {'attr':{'id':'form_score','autofocus':'true'}}) }}
     </div>
     <br>
     <div class="baseStyle">
-        {{ form_row(form.submit) }}
+        {{ form_row(form.submit, {'attr':{'id':'form_submit'}}) }}
     </div>
     {{ form_end(form) }}
 </div>

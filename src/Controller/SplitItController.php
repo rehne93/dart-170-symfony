@@ -18,19 +18,18 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SplitItController extends AbstractController
 {
-    // TODO Implement game logic
 
     private $logger;
 
     private $currentGame;
-    private $currentTarget = "";
     private $playerName = "";
-    private $round = 0;
 
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
+
+    // TODO Make refresh no submit
 
     /**
      * @Route("/dart/splitit", name="split_it")
@@ -43,11 +42,16 @@ class SplitItController extends AbstractController
             return $this->redirectToRoute('new_player');
         }
 
-        $this->currentGame = new SplitIt();
-        $this->currentGame->setScore(0);
-
-        $this->handleCookiesOnLoad($request);
-
+        $jsonData = $this->loadSplitItGame($request);
+        if ($jsonData == null) {
+            $this->currentGame = new SplitIt();
+            $this->currentGame->setCurrentRound(0);
+            $this->currentGame->setScore(0);
+        } else {
+            $game = new SplitIt();
+            $game->set($jsonData);
+            $this->currentGame = $game;
+        }
 
         $form = $this->createForm(SplitItForm::class, $this->currentGame);
         $form->handleRequest($request);
@@ -56,15 +60,42 @@ class SplitItController extends AbstractController
             $this->handleData($form);
         }
 
-
         $response = $this->render('split_it/index.html.twig', array(
             'currentScore' => $this->currentGame->getCurrentScore(),
             'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
-            'currentTarget' => $this->currentTarget,
+            'currentTarget' => $this->convertCurrentRound(),
             'name' => $this->playerName
         ));
-        $this->handleCookiesOnEnd($response);
-        return $response;
+
+
+        if ($this->currentGame->getCurrentRound() == 0) {
+            $this->saveToDatabase();
+            $response = $this->render('split_it/index.html.twig', array(
+                'currentScore' => 40,
+                'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
+                'currentTarget' => $this->convertCurrentRound(),
+                'name' => $this->playerName
+            ));
+            $response->headers->clearCookie('splitit');
+            return $response;
+        } else {
+            $response->headers->setCookie(new Cookie('splitit', json_encode($this->currentGame)));
+            return $response;
+
+        }
+    }
+
+
+    private function saveToDatabase()
+    {
+        $dbModel = new SplitScore();
+        // TODO Implement me again!
+    }
+
+    private function loadSplitItGame(Request $request)
+    {
+        $splitIt = json_decode($request->cookies->get('splitit'));
+        return $splitIt;
     }
 
     /**
@@ -74,64 +105,44 @@ class SplitItController extends AbstractController
     private function handleData($form)
     {
         $result = $form->getData();
-
-        if ($result->getScore() == 0) {
-            $this->logger->info("Halve it");
-            $this->currentGame->setCurrentScore($this->currentGame->getCurrentScore() * 0.5);
-        } else {
+        if ($result->getScore() != 0) {
             $this->currentGame->setCurrentScore($this->currentGame->getCurrentScore() + $result->getScore());
-        }
-        $this->logger->info("Calculated score as " . $this->currentGame->getCurrentScore());
-    }
-
-    private function handleCookiesOnLoad(Request $request)
-    {
-        if ($request->cookies->has('score')) {
-            $this->currentGame->setCurrentScore($request->cookies->get('score'));
+            $this->logger->debug("Not halving");
         } else {
-            $this->currentGame->setCurrentScore(40);
+            $score = $this->currentGame->getCurrentScore();
+            $score = ceil($score / 2);
+            $this->currentGame->setCurrentScore($score);
+            $this->logger->debug("Halving");
         }
-        if ($request->cookies->has('round')) {
-            $this->round = $request->cookies->get('round');
-            $this->currentTarget = SplitItCircle::getCurrentRound($this->round);
-        } else {
-            $this->currentTarget = SplitItCircle::getCurrentRound(0);
-        }
+        $this->currentGame->setCurrentRound(($this->currentGame->getCurrentRound() + 1) % 9);
     }
 
-    private function handleCookiesOnEnd(Response $response)
+
+    private function convertCurrentRound()
     {
-        // Win Condition
-        if ($this->currentTarget == '') {
-            $splitScore = new SplitScore();
-            try {
-                $splitScore->setPlayer(\PlayerQuery::create()->findOneByName($this->playerName));
-            } catch (PropelException $e) {
-            }
-            $splitScore->setFinalscore($this->currentGame->getCurrentScore());
-            $dateTime = new DateTime();
-            $dateTime->format('Y-m-d H:i:s');
-            $splitScore->setDate($dateTime);
-            $this->logger->debug("Saving game:" . $splitScore);
-            try {
-                $splitScore->save();
-            } catch (PropelException $e) {
-            }
-            $this->deleteCookies($response);
-            $this->currentGame->setCurrentScore(80); // HACK, has to be fixed.
-            $this->round = -1;
+        $currentRound = $this->currentGame->getCurrentRound();
+        switch ($currentRound) {
+            case 0:
+                return 15;
+            case 1:
+                return 16;
+            case 2:
+                return 66;
+            case 3:
+                return 17;
+            case 4:
+                return 18;
+            case 5:
+                return 777;
+            case 6:
+                return 19;
+            case 7:
+                return 20;
+            case 8:
+                return 50;
+            default:
+                return 0;
         }
-        $response->headers->setCookie(new Cookie('score', $this->currentGame->getCurrentScore()));
-        $this->round++;
-        $this->logger->debug("Round " . $this->round);
-        $response->headers->setCookie(new Cookie('round', $this->round));
     }
-
-    private function deleteCookies(Response $response)
-    {
-        $response->headers->removeCookie('score');
-        $response->headers->removeCookie('round');
-    }
-
 
 }

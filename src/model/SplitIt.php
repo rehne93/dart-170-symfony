@@ -9,11 +9,14 @@
 namespace App\model;
 
 
-class SplitIt
+use JsonSerializable;
+
+class SplitIt implements JsonSerializable
 {
 
     private $currentScore = 40;
     private $score;
+    private $currentRound;
 
     /**
      * @return int
@@ -32,7 +35,6 @@ class SplitIt
     }
 
 
-
     /**
      * @return mixed
      */
@@ -49,5 +51,35 @@ class SplitIt
         $this->score = $score;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCurrentRound()
+    {
+        return $this->currentRound;
+    }
+
+    /**
+     * @param mixed $currentRound
+     */
+    public function setCurrentRound($currentRound): void
+    {
+        $this->currentRound = $currentRound;
+    }
+
+
+    public function jsonSerialize()
+    {
+        return [
+            'currentScore' => $this->getCurrentScore(),
+            'score' => $this->getScore(),
+            'currentRound' => $this->getCurrentRound()
+        ];
+    }
+
+    public function set($jsonData)
+    {
+        foreach ($jsonData AS $key => $value) $this->{$key} = $value;
+    }
 
 }
