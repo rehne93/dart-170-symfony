@@ -69,7 +69,6 @@ class SplitItController extends AbstractController
 
 
         if ($this->currentGame->getCurrentRound() == 0) {
-            $this->saveToDatabase();
             $response = $this->render('split_it/index.html.twig', array(
                 'currentScore' => 40,
                 'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
@@ -89,6 +88,12 @@ class SplitItController extends AbstractController
     private function saveToDatabase()
     {
         $dbModel = new SplitScore();
+        $dbModel->setFinalscore($this->currentGame->getCurrentScore());
+        $dbModel->setPlayer(PlayerQuery::create()->findOneByName($this->playerName));
+        try {
+            $dbModel->save();
+        } catch (PropelException $e) {
+        }
         // TODO Implement me again!
     }
 
@@ -115,6 +120,9 @@ class SplitItController extends AbstractController
             $this->logger->debug("Halving");
         }
         $this->currentGame->setCurrentRound(($this->currentGame->getCurrentRound() + 1) % 9);
+        if ($this->currentGame->getCurrentRound() == 0) {
+            $this->saveToDatabase();
+        }
     }
 
 

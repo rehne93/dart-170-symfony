@@ -5,18 +5,20 @@
         <link href="../../css/newplayerform.css" rel="stylesheet"/>
     {% endblock %}
 </head>
-<div class="baseStyle accountInfo">Use your credentials to login if you have a account. <br>
-    Otherwise a account will be created for you. <br> <br></div>
-<div class="form">
-    {{ form_start(form) }}
-    <span class="baseStyle namePassword">
+{% if not loggedIn %}
+    <div class="baseStyle accountInfo">Use your credentials to login if you have a account. <br>
+        Otherwise a account will be created for you. <br> <br></div>
+    <div class="form">
+        {{ form_start(form) }}
+        <span class="baseStyle namePassword">
         {{ form_row(form.name) }}
-        {{ form_row(form.password) }} <br>
+            {{ form_row(form.password) }} <br>
    </span>
-    <div class="baseStyle submit">
-        {{ form_row(form.submit) }}</div>
-    {{ form_end(form) }}
-</div>
+        <div class="baseStyle submit">
+            {{ form_row(form.submit) }}</div>
+        {{ form_end(form) }}
+    </div>
+{% endif %}
 <div class="baseStyle toGame">
     <a href="{{ path('dart170_form') }}"> Zum Spiel: <b>170</b> </a>
     <br>

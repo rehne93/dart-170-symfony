@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Forms\NewUserForm;
 use App\model\PlayerForm;
+use App\Utility\Authorizer;
 use Player;
 use PlayerQuery;
 use Propel\Runtime\Exception\PropelException;
@@ -37,7 +38,7 @@ class NewPlayerController extends AbstractController
 
         $form = $this->createForm(NewUserForm::class, $player);
         $form->handleRequest($request);
-        $response = $this->render('new_player/index.html.twig', array('form' => $form->createView()));
+        $response = $this->render('new_player/index.html.twig', array('form' => $form->createView(), 'loggedIn' => false));
         $redirect = false;
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -52,7 +53,12 @@ class NewPlayerController extends AbstractController
             //  return $this->redirectToRoute('dart170_form');
 
         }
-        $response = $this->render('new_player/index.html.twig', array('form' => $form->createView()));
+        $auth = new Authorizer();
+        $loggedIn = false;
+        if ($auth->isAuthorized($request)) {
+            $loggedIn = true;
+        }
+        $response = $this->render('new_player/index.html.twig', array('form' => $form->createView(), 'loggedIn' => $loggedIn));
         $response->headers->setCookie(new Cookie('player', $this->playerName));
 
         return $response;
