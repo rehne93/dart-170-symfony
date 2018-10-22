@@ -7,8 +7,28 @@
     border-radius: 8px;
     display: inline-block;
     font-size: 20px;
-}
+    padding: 16px 32px;
+    color: white;
+    background-color: #4CAF50;
 
+}
 label{
     display: block;
+}
+
+input[type=text], [type=password] {
+    padding: 12px 20px;
+    font-size: 20px;
+}
+
+.flashes {
+    font-size: 20px;
+}
+
+.flashes_error {
+    color: red;
+}
+
+.flashes_success {
+    color: green;
 }

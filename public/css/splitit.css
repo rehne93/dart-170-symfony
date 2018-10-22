@@ -1,0 +1,40 @@
+.currentScore {
+    font-size: 50px;
+}
+
+.target {
+    font-size: 50px;
+}
+
+.scores {
+    max-width: 33%;
+}
+
+.flex-container {
+    margin-top: 3%;
+    display: flex;
+    justify-content: center;
+}
+
+.currentTarget {
+    max-width: 33%;
+}
+
+.inputInfo {
+    max-width: 33%;
+}
+
+.average {
+    font-size: 20px;
+    margin-top: 1%;
+}
+
+.average-value {
+    font-size: 35px;
+    color: green;
+}
+
+.average-container {
+    flex-direction: column;
+}
+

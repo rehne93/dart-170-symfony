@@ -1,33 +1,66 @@
 <html>
 <head>
-    <!-- TODO Add Average Score -->
     {% block stylesheets %}
         <link href="../css/base.css" rel="stylesheet"/>
+        <link href="../css/splitit.css" rel="stylesheet"/>
     {% endblock %}
 
+    {% block javascripts %}
+        <script src="../../public/js/Utility.js"></script>
+    {% endblock %}
 </head>
-<body onload="clearOnLoad()">
-<div class="baseStyle">
-    Hello {{ name }}! <br> You're successfully logged in! <br> <br>
-</div>
-<div class="baseStyle">
-    {{ currentScore }}
-</div>
-<div class="form">
-    {{ form_start(form,{'attr':{'id':'form_splitIt'}}) }}
-    <div class="baseStyle">
-        {{ form_row(form.score, {'attr':{'id':'form_score','autofocus':'true'}}) }}
+<body>
+
+
+<div class="flex-container">
+    <div class="baseStyle scores">
+        Score: <br>
+        <div class="currentScore">
+            {{ currentScore }}</div>
     </div>
-    <br>
-    <div class="baseStyle">
-        {{ form_row(form.submit, {'attr':{'id':'form_submit'}}) }}
+    <div class="inputInfo">
+        <div class="form">
+            {{ form_start(form,{'attr':{'id':'form_splitIt'}}) }}
+            <div class="baseStyle">
+                {{ form_row(form.score, {'attr':{'id':'form_score','autofocus':'true'}}) }}
+            </div>
+            <br>
+            <div class="baseStyle">
+                {{ form_row(form.submit, {'attr':{'id':'form_submit'}}) }}
+            </div>
+            {{ form_end(form) }}
+        </div>
     </div>
-    {{ form_end(form) }}
+    <div class="baseStyle currentTarget">
+        Wirf auf: <br>
+        <div class="target">
+            {{ currentTarget }}</div>
+    </div>
 </div>
 
-<div class="baseStyle">
-    Wirf auf: {{ currentTarget }}
-</div>
 
+<div class="baseStyle flex-container average-container">
+    <div class="average">
+        Schnitt der letzten Spiele:
+    </div>
+    <div class="average-value"> {{ average }} </div>
+</div>
+<div class="baseStyle flashes">
+    {% for message in app.flashes('success') %}
+        <div class="baseStyle flashes_success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="baseStyle flashes_error">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% if alert %}
+    <script>
+        alert({{ msg }});
+    </script>
+{% endif %}
 </body>
 </html>

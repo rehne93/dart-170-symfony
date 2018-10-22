@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
 
 class NewPlayerController extends AbstractController
@@ -31,6 +32,8 @@ class NewPlayerController extends AbstractController
     public function new(Request $request)
     {
 
+        $session = new Session();
+        $session->getFlashBag()->clear();
 
         $player = new PlayerForm();
         $player->setPassword("");
@@ -48,9 +51,7 @@ class NewPlayerController extends AbstractController
             foreach ($response->headers->getCookies() as $cookie) {
                 $this->logger->debug("Cookie: " . $cookie->getName() . ":" . $cookie->getValue());
             }
-            // $response->send();
             $this->addFlash('success', "Player logged in! Choose a game!");
-            //  return $this->redirectToRoute('dart170_form');
 
         }
         $auth = new Authorizer();

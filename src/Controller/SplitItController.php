@@ -10,6 +10,7 @@ use DateTime;
 use Propel\Runtime\Exception\PropelException;
 use Psr\Log\LoggerInterface;
 use SplitScore;
+use SplitScoreQuery;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,13 +24,15 @@ class SplitItController extends AbstractController
 
     private $currentGame;
     private $playerName = "";
+    private $average = -1;
 
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    // TODO Make refresh no submit
+    // TODO Make refresh no submit.
+    // TODO Validate Score.
 
     /**
      * @Route("/dart/splitit", name="split_it")
@@ -41,6 +44,9 @@ class SplitItController extends AbstractController
         if ($this->playerName === '') {
             return $this->redirectToRoute('new_player');
         }
+
+        $this->average = $this->calculateAverage();
+
 
         $jsonData = $this->loadSplitItGame($request);
         if ($jsonData == null) {
@@ -64,7 +70,10 @@ class SplitItController extends AbstractController
             'currentScore' => $this->currentGame->getCurrentScore(),
             'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
             'currentTarget' => $this->convertCurrentRound(),
-            'name' => $this->playerName
+            'name' => $this->playerName,
+            'alert' => false,
+            'msg' => "",
+            'average' => $this->average
         ));
 
 
@@ -73,14 +82,16 @@ class SplitItController extends AbstractController
                 'currentScore' => 40,
                 'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
                 'currentTarget' => $this->convertCurrentRound(),
-                'name' => $this->playerName
+                'name' => $this->playerName,
+                'alert' => true,
+                'msg' => "This games score: " . $this->currentGame->getCurrentScore(),
+                'average' => $this->average,
             ));
             $response->headers->clearCookie('splitit');
             return $response;
         } else {
             $response->headers->setCookie(new Cookie('splitit', json_encode($this->currentGame)));
             return $response;
-
         }
     }
 
@@ -93,8 +104,8 @@ class SplitItController extends AbstractController
         try {
             $dbModel->save();
         } catch (PropelException $e) {
+            $this->addFlash('error', "Error saving to database.");
         }
-        // TODO Implement me again!
     }
 
     private function loadSplitItGame(Request $request)
@@ -117,11 +128,13 @@ class SplitItController extends AbstractController
             $score = $this->currentGame->getCurrentScore();
             $score = ceil($score / 2);
             $this->currentGame->setCurrentScore($score);
-            $this->logger->debug("Halving");
+            $this->addFlash("success", "Halving");
         }
         $this->currentGame->setCurrentRound(($this->currentGame->getCurrentRound() + 1) % 9);
         if ($this->currentGame->getCurrentRound() == 0) {
+            $this->addFlash('success', "Player logged in! Choose a game!");
             $this->saveToDatabase();
+            $this->calculateAverage();
         }
     }
 
@@ -135,22 +148,34 @@ class SplitItController extends AbstractController
             case 1:
                 return 16;
             case 2:
-                return 66;
+                return 2;
             case 3:
                 return 17;
             case 4:
                 return 18;
             case 5:
-                return 777;
+                return 3;
             case 6:
                 return 19;
             case 7:
                 return 20;
             case 8:
-                return 50;
+                return 25;
             default:
                 return 0;
         }
+    }
+
+
+    private function calculateAverage()
+    {
+        $player = PlayerQuery::create()->findOneByName($this->playerName);
+        $splitGames = SplitScoreQuery::create()->findByPlayerid($player->getId())->getColumnValues('finalScore');
+        $score = 0;
+        foreach ($splitGames as $game) {
+            $score += $game;
+        }
+        return round($score / sizeof($splitGames), 0);
     }
 
 }
