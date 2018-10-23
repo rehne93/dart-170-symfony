@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Forms\StatsForm;
 use App\model\Stats;
+use App\Service\Dart170Service;
+use App\Service\PlayerService;
+use App\Service\SplitItService;
 use Fpdf\Fpdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -37,11 +40,27 @@ class StatsGenerationController extends AbstractController
      */
     public function generate($name)
     {
+        $d170Service = new Dart170Service($name);
+        $splitService = new SplitItService($name);
+        $pdf = $this->initializePdf();
+        $pdf->SetX($pdf->GetPageWidth() / 2);
+        $pdf->Cell(0, 5, $name);
+        $pdf->Line(40, $pdf->GetY() + 10, $pdf->GetPageWidth() - 40, $pdf->GetY() + 10);
+        $pdf->SetX(10);
+        $pdf->SetY($pdf->GetY() + 15);
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(0, 5, "Anzahl Runden (170):\t\t\t\t " . $d170Service->getAllTimeAverage());
+        $pdf->SetY($pdf->GetY() + 5);
+        $pdf->Cell(0, 5, "Durchschnitt Split-Score: \t\t\t\t" . $splitService->getSplitScoreAverage());
+
+        return new Response($pdf->Output(), 200, array('Content-type' => 'application/pdf'));
+    }
+
+    private function initializePdf()
+    {
         $pdf = new Fpdf();
         $pdf->AddPage();
         $pdf->SetFont('Arial', 'B', 16);
-        $pdf->Cell(40, 10, 'Hello ' . $name . '!');
-
-        return new Response($pdf->Output(), 200, array('Content-type' => 'application/pdf'));
+        return $pdf;
     }
 }

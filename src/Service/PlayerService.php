@@ -17,4 +17,10 @@ class PlayerService
     {
         return PlayerQuery::create()->find()->getColumnValues('name');
     }
+
+
+    public function getPlayerId($name)
+    {
+        return PlayerQuery::create()->findOneByName($name)->getId();
+    }
 }
