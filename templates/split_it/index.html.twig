@@ -6,12 +6,17 @@
     {% endblock %}
 
     {% block javascripts %}
-        <script src="../../public/js/Utility.js"></script>
+        <script src="../js/Utility.js"></script>
+
     {% endblock %}
 </head>
 <body>
 
-
+{% if alert %}
+    <script>
+        msg("{{ msg }} ");
+    </script>
+{% endif %}
 <div class="flex-container">
     <div class="baseStyle scores">
         Score: <br>
@@ -57,10 +62,6 @@
         </div>
     {% endfor %}
 </div>
-{% if alert %}
-    <script>
-        alert({{ msg }});
-    </script>
-{% endif %}
+
 </body>
 </html>

@@ -1,3 +1,3 @@
-function alert(msg) {
+function msg(msg) {
     alert(msg);
 }

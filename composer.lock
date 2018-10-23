@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-  "content-hash": "bc4bbb9fa1c7e2494f44077d033e86ba",
+  "content-hash": "5c303accf4f351874e03ed5364c6c2eb",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -1171,6 +1171,48 @@
             "time": "2018-06-14T14:45:07+00:00"
         },
         {
+          "name": "fpdf/fpdf",
+          "version": "1.81.1",
+          "source": {
+            "type": "git",
+            "url": "https://github.com/coreydoughty/Fpdf.git",
+            "reference": "4132cce007e6da763a7e4d1f0c4bb7802da29d8a"
+          },
+          "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/coreydoughty/Fpdf/zipball/4132cce007e6da763a7e4d1f0c4bb7802da29d8a",
+            "reference": "4132cce007e6da763a7e4d1f0c4bb7802da29d8a",
+            "shasum": ""
+          },
+          "require": {
+            "php": ">=5.6.0"
+          },
+          "type": "library",
+          "autoload": {
+            "psr-4": {
+              "Fpdf\\": "src/Fpdf"
+            }
+          },
+          "notification-url": "https://packagist.org/downloads/",
+          "license": [
+            "MIT"
+          ],
+          "authors": [
+            {
+              "name": "Corey Doughty",
+              "email": "corey@doughty.ca"
+            }
+          ],
+          "description": "FPDF Composer Wrapper",
+          "homepage": "https://github.com/coreydoughty/Fpdf",
+          "keywords": [
+            "fpdf",
+            "pdf",
+            "wrapper"
+          ],
+          "time": "2018-10-14T13:28:51+00:00"
+        },
+      {
             "name": "jdorn/sql-formatter",
             "version": "v1.2.17",
             "source": {

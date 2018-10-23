@@ -132,9 +132,7 @@ class SplitItController extends AbstractController
         }
         $this->currentGame->setCurrentRound(($this->currentGame->getCurrentRound() + 1) % 9);
         if ($this->currentGame->getCurrentRound() == 0) {
-            $this->addFlash('success', "Player logged in! Choose a game!");
             $this->saveToDatabase();
-            $this->calculateAverage();
         }
     }
 
@@ -175,6 +173,7 @@ class SplitItController extends AbstractController
         foreach ($splitGames as $game) {
             $score += $game;
         }
+        if (sizeof($splitGames) == 0) return 0;
         return round($score / sizeof($splitGames), 0);
     }
 
