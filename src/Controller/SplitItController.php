@@ -69,7 +69,7 @@ class SplitItController extends AbstractController
         $response = $this->render('split_it/index.html.twig', array(
             'currentScore' => $this->currentGame->getCurrentScore(),
             'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
-            'currentTarget' => $this->convertCurrentRound(),
+            'currentTarget' => $this->convertRoundToString($this->convertCurrentRound()),
             'name' => $this->playerName,
             'alert' => false,
             'msg' => "",
@@ -81,7 +81,7 @@ class SplitItController extends AbstractController
             $response = $this->render('split_it/index.html.twig', array(
                 'currentScore' => 40,
                 'form' => $this->createForm(SplitItForm::class, $this->currentGame)->createView(),
-                'currentTarget' => $this->convertCurrentRound(),
+                'currentTarget' => $this->convertRoundToString($this->convertCurrentRound()),
                 'name' => $this->playerName,
                 'alert' => true,
                 'msg' => "This games score: " . $this->currentGame->getCurrentScore(),
@@ -122,6 +122,11 @@ class SplitItController extends AbstractController
     {
         $result = $form->getData();
         if ($result->getScore() != 0) {
+            // Validate here
+            if (!$this->validateScore($result->getScore())) {
+                $this->addFlash('error', 'Ungültiger Score.');
+                return;
+            }
             $this->currentGame->setCurrentScore($this->currentGame->getCurrentScore() + $result->getScore());
             $this->logger->debug("Not halving");
         } else {
@@ -134,6 +139,14 @@ class SplitItController extends AbstractController
         if ($this->currentGame->getCurrentRound() == 0) {
             $this->saveToDatabase();
         }
+    }
+
+    private function validateScore($shotScore)
+    {
+        if ($shotScore % $this->convertCurrentRound() != 0) {
+            return false;
+        }
+        return true;
     }
 
 
@@ -164,6 +177,19 @@ class SplitItController extends AbstractController
         }
     }
 
+    private function convertRoundToString($round)
+    {
+        switch ($round) {
+            case 2:
+                return "Beliebiges Doppel";
+            case 3:
+                return "Beliebiges Trippel";
+            case 25:
+                return "Bull";
+            default:
+                return $round;
+        }
+    }
 
     private function calculateAverage()
     {
