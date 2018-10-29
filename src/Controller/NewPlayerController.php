@@ -47,15 +47,18 @@ class NewPlayerController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $redirect = $this->handleForm($form, $response);
         }
+        $loggedIn = false;
+
         if ($redirect) {
             foreach ($response->headers->getCookies() as $cookie) {
                 $this->logger->debug("Cookie: " . $cookie->getName() . ":" . $cookie->getValue());
             }
+            $loggedIn = true;
+
             $this->addFlash('success', "Player logged in! Choose a game!");
 
         }
         $auth = new Authorizer();
-        $loggedIn = false;
         if ($auth->isAuthorized($request)) {
             $loggedIn = true;
         }

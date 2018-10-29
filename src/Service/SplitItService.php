@@ -15,6 +15,7 @@ class SplitItService
 {
 
     private $name;
+    private $playerId = -1;
 
     /**
      * SplitItService constructor.
@@ -23,18 +24,31 @@ class SplitItService
     public function __construct($name)
     {
         $this->name = $name;
+        $pService = new PlayerService();
+        $this->playerId = $pService->getPlayerId($this->name);
+
     }
 
 
     public function getSplitScoreAverage()
     {
-        $pService = new PlayerService();
-        $id = $pService->getPlayerId($this->name);
-
-        $scores = SplitScoreQuery::create()->findByPlayerid($id)->getColumnValues('finalScore');
+        $scores = SplitScoreQuery::create()->findByPlayerid($this->playerId)->getColumnValues('finalScore');
         if (sizeof($scores) == 0) return 0;
 
         return round(array_sum($scores) / sizeof($scores), 3);
     }
+
+    public function getHighestSplitscore()
+    {
+        $highScore = SplitScoreQuery::create()->orderByFinalscore('desc')->findOneByPlayerid($this->playerId);
+        return $highScore->getFinalscore();
+    }
+
+    public function getLowestSplitscore()
+    {
+        $highScore = SplitScoreQuery::create()->orderByFinalscore()->findOneByPlayerid($this->playerId);
+        return $highScore->getFinalscore();
+    }
+
 
 }

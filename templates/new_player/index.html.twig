@@ -4,10 +4,13 @@
         <link href="../../css/base.css" rel="stylesheet"/>
         <link href="../../css/newplayerform.css" rel="stylesheet"/>
     {% endblock %}
+    {% block javascripts %}
+        <script src="../js/Utility.js"></script>
+    {% endblock %}
 </head>
 {% if not loggedIn %}
-    <div class="baseStyle accountInfo">Use your credentials to login if you have a account. <br>
-        Otherwise a account will be created for you. <br> <br></div>
+    <div class="baseStyle accountInfo">Bitte einloggen. Falls kein Account besteht, wird ein Neuer erstellt. <br> <br>
+    </div>
     <div class="form">
         {{ form_start(form) }}
         <span class="baseStyle namePassword">
@@ -19,12 +22,25 @@
         {{ form_end(form) }}
     </div>
 {% endif %}
-<div class="baseStyle toGame">
-    <a href="{{ path('dart170_form') }}"> Zum Spiel: <b>170</b> </a>
-    <br>
-    <a href="{{ path('split_it') }}"> Zum Spiel: <b>Split It</b></a>
-    <br>
-    <a href="{{ path('around_the_clock') }}"> Zum Spiel:<b> Around the clock</b> </a>
+
+
+<div class="baseStyle toGame flexbox">
+    <div class="label">
+        Modi:
+    </div>
+    <div class="game">
+        <a href="{{ path('dart170_form') }}"> <b>170</b> </a>
+    </div>
+    <div class="game">
+        <a href="{{ path('split_it') }}"> <b>Split It</b></a>
+    </div>
+    <div class="game">
+        <a href="{{ path('stats_generation') }}"> Statistiken </a>
+    </div>
+
+    <div class="game">
+        <a href="javascript:logout()"> Logout</a>
+    </div>
 
 </div>
 <br>

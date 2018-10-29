@@ -22,4 +22,15 @@
     display: inline;
 }
 
+.flexbox {
+    display: flex;
+    justify-content: center;
+}
+
+.game {
+    margin-left: 1%;
+    margin-right: 1%;
+    font-size: 25px;
+}
+
 

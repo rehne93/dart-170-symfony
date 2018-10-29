@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+
+
+{% block body %}
+<div class="form">
+    {{ form_start(form) }}
+    <div class="baseStyle">
+        {{ form_row(form.user) }}
+    </div>
+    <br>
+    <div class="baseStyle">
+        {{ form_row(form.submit) }}
+    </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

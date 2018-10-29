@@ -52,7 +52,10 @@ class StatsGenerationController extends AbstractController
         $pdf->Cell(0, 5, "Anzahl Runden (170):\t\t\t\t " . $d170Service->getAllTimeAverage());
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->Cell(0, 5, "Durchschnitt Split-Score: \t\t\t\t" . $splitService->getSplitScoreAverage());
-
+        $pdf->SetY($pdf->getY() + 5);
+        $pdf->Cell(0, 5, "Hoechster Split-Score: \t\t\t\t" . $splitService->getHighestSplitscore());
+        $pdf->SetY($pdf->GetY() + 5);
+        $pdf->Cell(0, 5, "Niedrigster Split-Score: \t\t\t\t" . $splitService->getLowestSplitscore());
         return new Response($pdf->Output(), 200, array('Content-type' => 'application/pdf'));
     }
 

@@ -143,7 +143,7 @@ class SplitItController extends AbstractController
 
     private function validateScore($shotScore)
     {
-        if ($shotScore % $this->convertCurrentRound() != 0) {
+        if ($shotScore % $this->convertCurrentRound() != 0 || $shotScore > 180 || $shotScore < 0) {
             return false;
         }
         return true;
