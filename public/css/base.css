@@ -12,6 +12,13 @@
     background-color: #4CAF50;
 
 }
+
+.flex-container {
+    margin-top: 3%;
+    display: flex;
+    justify-content: center;
+}
+
 label{
     display: block;
 }

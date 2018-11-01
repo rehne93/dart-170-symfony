@@ -6,7 +6,7 @@ use App\Forms\SplitItForm;
 use App\model\SplitIt;
 use App\Utility\Authorizer;
 use App\Utility\SplitItCircle;
-use DateTime;
+use PlayerQuery;
 use Propel\Runtime\Exception\PropelException;
 use Psr\Log\LoggerInterface;
 use SplitScore;
@@ -60,6 +60,7 @@ class SplitItController extends AbstractController
         }
 
         $form = $this->createForm(SplitItForm::class, $this->currentGame);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

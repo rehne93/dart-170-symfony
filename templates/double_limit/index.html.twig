@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<head>
+    {% block stylesheets %}
+        <link href="../css/base.css" rel="stylesheet"/>
+        <link href="../css/double.css" rel="stylesheet"/>
+    {% endblock %}
+</head>
+
+{% block body %}
+
+    <div id="anleitung" class="baseStyle">
+        Drei Runden / Neun Darts zum Finishen von:
+    </div>
+    <div id="div_score" class="baseStyle doubleScore">
+        <label id="score">{{ score }}</label>
+    </div>
+    <div id="form_game" class="baseStyle buttonStyle">
+        {{ form_start(form,{'attr':{'id':'form_double'}}) }}
+        {{ form_row(form.finished) }}
+        {{ form_row(form.notFinished) }}
+        {{ form_end(form) }}
+    </div>
+
+    <div id="stats" class="baseStyle flex-container stats">
+        <div id="finishedLabel" class="finish">
+            Finishes:
+            <label id="finished" class="finish finished">
+                {{ finished }}
+            </label>
+        </div>
+        <div id="notFinishedLabel" class="finish">
+            Nicht geschafft:
+            <label id="notFinished" class="finish notFinished">
+                {{ notFinished }}
+            </label>
+        </div>
+    </div>
+{% endblock %}

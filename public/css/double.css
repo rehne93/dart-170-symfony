@@ -1,0 +1,25 @@
+.doubleScore {
+    font-size: 40px;
+    margin-bottom: 2%;
+    margin-top: 2%;
+}
+
+.stats {
+    font-size: 30px;
+}
+
+.finish {
+    margin: 1%;
+}
+
+.finished {
+    color: darkgreen;
+}
+
+.notFinished {
+    color: red;
+}
+
+button {
+    margin-bottom: 1%;
+}

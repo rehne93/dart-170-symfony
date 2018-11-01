@@ -5,7 +5,6 @@ This project is mainly used to improve my PHP skills.
 Currently three games are available:
 - 170: Count the rounds you need to finish 170 Points and show the average of the last 7 days and all-time-average
 - Split Score: Sometimes also called halve it.
-- Around the Clock: Counts the rounds you need from 1->20 or 20->1.
-
+- Stats: Generates basic stats from the database
 #Setup
 TODO
